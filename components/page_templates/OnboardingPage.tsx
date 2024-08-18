@@ -1,42 +1,60 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Image } from "react-native";
 import Body from "@/components/UI/Body";
-import { Image } from "expo-image";
 import PrimaryButton from "@/components/UI/buttons/PrimaryButton";
 import Container from "@/components/UI/Container";
 import { H1, SecondaryText } from "@/components/UI/typography/Typography";
 import Progress from "@/components/UI/page_progress/Progress";
-export default function NewQuestions() {
-  return (
-    <Body>
-      <Container style={styles.container}>
-        <View style={styles.progressContainer}>
-          <Progress numOfSteps={3} currentStep={1} />
-        </View>
-        <View style={styles.contentContainer}>
-          <View style={styles.illustrationContainer}>
-            <Image
-              style={styles.illustration}
-              source={require("@/assets/images/illustrations/spaceIllustration.png")}
-              // placeholder={{ blurhash }}
-              contentFit="cover"
-              transition={500}
-            />
-          </View>
-          <View style={styles.bottomContainer}>
-            <View style={styles.textContainer}>
-              <H1 style={{ textAlign: "center" }}>מאות שאלות חדשות!</H1>
-              <SecondaryText style={{ textAlign: "center" }}>
-                למדו תכנות עם מאות שאלות בנושאים שונים כגון פיתוח אתרים, תכנות
-                מונחה עצמים, סייבר, תקשורת ועוד...
-              </SecondaryText>
-            </View>
+import { router } from "expo-router";
 
-            <PrimaryButton>המשך</PrimaryButton>
+import {
+  GestureDetector,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
+import Animated from "react-native-reanimated";
+
+import type { ImageSourcePropType } from "react-native";
+
+type onboardingProps = {
+  illustration: ImageSourcePropType;
+  title: string;
+  description: string;
+  index: number;
+  numOfPages: number;
+  moveToNextPage: () => void;
+};
+
+export default function OnboardingPage(props: onboardingProps) {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Body>
+        <Container style={styles.container}>
+          <Animated.View style={styles.progressContainer}>
+            <Progress numOfSteps={props.numOfPages} currentStep={props.index} />
+          </Animated.View>
+
+          <View style={styles.contentContainer}>
+            <View style={styles.illustrationContainer}>
+              <Image
+                style={styles.illustration}
+                source={props.illustration}
+                resizeMode="contain" // Ensures the image covers the container while maintaining its aspect ratio
+              />
+            </View>
+            <View style={styles.bottomContainer}>
+              <View style={styles.textContainer}>
+                <H1 style={{ textAlign: "center" }}>{props.title}</H1>
+                <SecondaryText style={{ textAlign: "center" }}>
+                  {props.description}
+                </SecondaryText>
+              </View>
+
+              <PrimaryButton onPress={props.moveToNextPage}>המשך</PrimaryButton>
+            </View>
           </View>
-        </View>
-      </Container>
-    </Body>
+        </Container>
+      </Body>
+    </GestureHandlerRootView>
   );
 }
 
@@ -56,11 +74,13 @@ const styles = StyleSheet.create({
   },
   illustrationContainer: {
     width: "100%",
-    height: 350,
+    height: 360,
+    marginLeft: 5,
+    overflow: "hidden", // Prevents the image from overflowing outside the container
   },
   illustration: {
-    flex: 1,
     width: "100%",
+    height: "100%", // Ensures the image covers the container while maintaining aspect ratio
   },
   progressContainer: {
     position: "absolute",

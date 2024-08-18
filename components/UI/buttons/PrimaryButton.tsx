@@ -26,6 +26,7 @@ export default function PrimaryButton(props: PrimaryButtonProps) {
       lightColor={Colors.light.primary}
       darkColor={Colors.dark.primary}
       android_ripple={{}}
+      onPress={props.onPress}
       style={{
         height: props.height ?? 64,
         width: props.fill ? "100%" : "auto",

@@ -1,29 +1,45 @@
-import { Image, StyleSheet, Platform, View } from "react-native";
+import { Image, StyleSheet, Platform, View, Text } from "react-native";
+import { useRootNavigationState, Redirect } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import Body from "@/components/UI/Body";
+import CircularProgressBar from "@/components/circularProgressBar/CircularProgressBar";
 
 export default function HomeScreen() {
-  return <View></View>;
-}
+  const [completedOnboarding, setCompletedOnboarding] = useState<string | null>(
+    null
+  );
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
-  },
-});
+  useEffect(() => {
+    async function checkCompletedOnboarding() {
+      console.log("Running this");
+      try {
+        const value = await AsyncStorage.getItem("Completed_Onboarding");
+        setCompletedOnboarding(value);
+      } catch (e) {
+        // error reading value
+      }
+    }
+
+    checkCompletedOnboarding();
+  }, []);
+  const rootNavigationState = useRootNavigationState();
+
+  if (!rootNavigationState?.key) return null;
+
+  if (completedOnboarding === "false") {
+    return <Redirect href="/onboarding/new_questions" />;
+  }
+
+  return (
+   <Body>
+    <CircularProgressBar completionRatio={0.5}/>
+   </Body>
+  );
+}

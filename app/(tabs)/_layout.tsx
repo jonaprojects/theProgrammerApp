@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Tabs, useNavigation, Stack } from "expo-router";
 import React from "react";
 
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
@@ -7,21 +7,33 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 
 // Boarding screens
 import NewQuestions from "../onboarding/new_questions";
+import OurYoutube from "../onboarding/our_youtube";
+import WeHaveTutorials from "../onboarding/tutorials";
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function Layout() {
+  // const colorScheme = useColorScheme();
+  //TODO: revert this later!
+  const colorScheme = 'dark'
 
   const tabs = (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: false,
+        tabBarActiveTintColor: Colors[colorScheme ?? "dark"].tint,
+        tabBarInactiveTintColor: "gray",
+        tabBarLabelStyle: { fontSize: 14 },
+        tabBarStyle: {
+          backgroundColor: Colors[colorScheme ?? "dark"].tabBackgroundColor,
+          borderTopColor: "transparent",
+          elevation: 0,
+        },
+        tabBarIconStyle: { fontSize: 20 },
+        headerShown: false, // hide header if needed
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "בית",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "home" : "home-outline"}
@@ -31,9 +43,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="study"
         options={{
-          title: "Explore",
+          title: "קורסים",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "code-slash" : "code-slash-outline"}
@@ -44,6 +56,5 @@ export default function TabLayout() {
       />
     </Tabs>
   );
-
-  return <NewQuestions />;
+  return tabs;
 }
