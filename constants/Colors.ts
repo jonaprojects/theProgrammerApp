@@ -18,7 +18,9 @@ export const Colors = {
     tabIconSelected: tintColorLight,
     lineProgressActive: "#52F5FD",
     lineProgressInactive: "#333C48",
-    tabBackgroundColor: "#fff"
+    tabBackgroundColor: "#fff",
+    cardBackgroundColor: "#1B2129"
+
   },
   dark: {
     text: '#ECEDEE',
@@ -32,6 +34,7 @@ export const Colors = {
     lineProgress: "#52F5FD",
     lineProgressActive: "#52F5FD",
     lineProgressInactive: "#333C48", 
-    tabBackgroundColor: "#1E242C"
+    tabBackgroundColor: "#1E242C",
+    cardBackgroundColor: "#1B2129"
   },
 };

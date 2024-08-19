@@ -4,13 +4,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import Body from "@/components/UI/Body";
-import CircularProgressBar from "@/components/circularProgressBar/CircularProgressBar";
-
+import { Colors } from "@/constants/Colors";
+import { H1 } from "@/components/UI/typography/Typography";
+import TopicProgress from "@/components/UI/topic_progress/TopicProgress";
+import { ScrollView } from "react-native";
 export default function HomeScreen() {
   const [completedOnboarding, setCompletedOnboarding] = useState<string | null>(
     null
@@ -18,7 +17,6 @@ export default function HomeScreen() {
 
   useEffect(() => {
     async function checkCompletedOnboarding() {
-      console.log("Running this");
       try {
         const value = await AsyncStorage.getItem("Completed_Onboarding");
         setCompletedOnboarding(value);
@@ -38,8 +36,36 @@ export default function HomeScreen() {
   }
 
   return (
-   <Body>
-    <CircularProgressBar completionRatio={0.5}/>
-   </Body>
+    <Body>
+      <H1 style={{ textAlign: "center", marginVertical: 32 }}>
+        תרגלת כבר היום?
+      </H1>
+      <ScrollView style={{ flex: 1 }}>
+        <TopicProgress
+          topic="תכנות מונחה עצמים"
+          totalNumOfQuestions={25}
+          questionsAnswered={10}
+          style={{ marginBottom: 8 }}
+        />
+        <TopicProgress
+          topic="פיתוח אתרים"
+          totalNumOfQuestions={37}
+          questionsAnswered={12}
+          style={{ marginBottom: 8 }}
+        />
+        <TopicProgress
+          topic="פייתון"
+          totalNumOfQuestions={41}
+          questionsAnswered={6}
+          style={{ marginBottom: 8 }}
+        />
+        <TopicProgress
+          topic="תקשורת ורשתות"
+          totalNumOfQuestions={15}
+          questionsAnswered={9}
+          style={{ marginBottom: 8 }}
+        />
+      </ScrollView>
+    </Body>
   );
 }
