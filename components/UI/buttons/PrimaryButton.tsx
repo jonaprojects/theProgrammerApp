@@ -1,24 +1,28 @@
 import React from "react";
 import type { PropsWithChildren } from "react";
-import { PressableAndroidRippleConfig, StyleSheet } from "react-native";
+import {
+  PressableAndroidRippleConfig,
+  StyleProp,
+  StyleSheet,
+  ViewStyle,
+} from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { ThemedPressable } from "@/components/ThemedPressable";
 
-type TextSettings = {
-    fontSize?: number;
-    fontFamily?: string;
-  };
+type TextStyle = {
+  fontSize?: number;
+  fontFamily?: string;
+};
 type PrimaryButtonProps = PropsWithChildren<{
   height?: number;
-  textSettings?: TextSettings
+  textStyle?: TextStyle;
   fill?: boolean;
   paddingHorizontal?: number;
   onPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 }>;
-
-
 
 export default function PrimaryButton(props: PrimaryButtonProps) {
   return (
@@ -39,8 +43,8 @@ export default function PrimaryButton(props: PrimaryButtonProps) {
         lightColor={Colors.light.text}
         darkColor={Colors.dark.text}
         style={{
-          fontFamily: props.textSettings?.fontFamily ?? "Heebo_700Bold",
-          fontSize: props.textSettings?.fontSize ?? 20,
+          fontFamily: props.textStyle?.fontFamily ?? "Heebo_700Bold",
+          fontSize: props.textStyle?.fontSize ?? 20,
         }}
       >
         {props.children}

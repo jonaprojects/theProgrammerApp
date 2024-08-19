@@ -43,9 +43,9 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="study"
+        name="exercise"
         options={{
-          title: "קורסים",
+          title: "תרגול",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "code-slash" : "code-slash-outline"}
@@ -53,7 +53,18 @@ export default function Layout() {
             />
           ),
         }}
-      />
+      /> <Tabs.Screen
+      name="study"
+      options={{
+        title: "קורסים",
+        tabBarIcon: ({ color, focused }) => (
+          <TabBarIcon
+            name={focused ? "book-outline" : "book-outline"}
+            color={color}
+          />
+        ),
+      }}
+    />
     </Tabs>
   );
   return tabs;

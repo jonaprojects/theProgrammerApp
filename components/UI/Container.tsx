@@ -10,7 +10,6 @@ export default function Container(props: ViewProps) {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: "100%",
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
   },
 });
