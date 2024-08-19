@@ -20,8 +20,8 @@ export const Colors = {
     lineProgressInactive: "#333C48",
     tabBackgroundColor: "#fff",
     cardBackgroundColor: "#1B2129",
-    optionBackgroundColor: "#29374B"
-
+    optionBackgroundColor: "#29374B",
+    navbarBg: "#1A212C"
 
   },
   dark: {
@@ -38,6 +38,8 @@ export const Colors = {
     lineProgressInactive: "#333C48", 
     tabBackgroundColor: "#1E242C",
     cardBackgroundColor: "#1B2129",
-    optionBackgroundColor: "#29374B"
+    optionBackgroundColor: "#29374B",
+    navbarBg: "#1B2129"
+
   },
 };

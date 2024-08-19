@@ -18,12 +18,14 @@ import YesNoButton from "@/components/UI/buttons/YesNoButton";
 import { I18nManager } from "react-native";
 import YesNoExercise from "@/components/exercises/YesNoExercise";
 import MultipleOptionExercise from "@/components/exercises/MultipleOptionExercise";
+import Navbar from "@/components/UI/Navbar";
 
 I18nManager.forceRTL(false); // Forces LTR layout
 
 export default function Exercise() {
   return (
     <Body>
+      <Navbar />
       <View
         style={{
           flex: 1,

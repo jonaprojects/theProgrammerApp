@@ -21,8 +21,8 @@ export default function MultipleOptionExercise(
         <QuestionHeader question={props.question} />
       </View>
 
-      <ScrollView>
-        <Container>
+      <ScrollView >
+        <Container >
           <View style={styles.optionsContainer}>
             <Option text={props.options[0]} index={0} />
             <Option text={props.options[1]} index={1} />
@@ -49,11 +49,11 @@ const styles = StyleSheet.create({
     height: 250,
   },
   optionsContainer: {
-    marginTop: 48,
+    marginTop: 36,
     gap: 16,
   },
   buttonsContainer: {
     gap: 8,
-    marginTop: 48,
+    marginTop: 36,
   },
 });
