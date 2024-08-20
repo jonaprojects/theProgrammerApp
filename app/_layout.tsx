@@ -11,6 +11,7 @@ import {
 } from "@expo-google-fonts/inter";
 import {
   Heebo_400Regular,
+  Heebo_500Medium,
   Heebo_700Bold,
   Heebo_900Black,
 } from "@expo-google-fonts/heebo";
@@ -36,6 +37,7 @@ export default function RootLayout() {
     Inter_700Bold,
     Inter_900Black,
     Heebo_400Regular,
+    Heebo_500Medium,
     Heebo_700Bold,
     Heebo_900Black,
   });

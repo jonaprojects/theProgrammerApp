@@ -4,7 +4,9 @@ import { ThemedView } from "../ThemedView";
 import Container from "./Container";
 import { H6 } from "./typography/Typography";
 import { Image } from "expo-image";
-import UserIconsMap, { letterMapper } from "./UserIconMap";
+import UserIconsMap, {
+  letterMapper as letterToIndexMapper,
+} from "./UserIconMap";
 
 export default function Navbar() {
   return (
@@ -16,16 +18,16 @@ export default function Navbar() {
         <Image
           source={require("@/assets/images/icons/logo.svg")}
           style={{
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
           }}
         />
         <View style={styles.profileDataContainer}>
           <Image
-            source={UserIconsMap[letterMapper["י"]]}
+            source={UserIconsMap[letterToIndexMapper["י"]]}
             style={{
-              width: 36,
-              height: 36,
+              width: 32,
+              height: 32,
             }}
           />
           <H6>יהונתן</H6>

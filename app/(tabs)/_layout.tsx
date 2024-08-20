@@ -54,7 +54,7 @@ export default function Layout() {
           ),
         }}
       /> <Tabs.Screen
-      name="study"
+      name="courses"
       options={{
         title: "קורסים",
         tabBarIcon: ({ color, focused }) => (

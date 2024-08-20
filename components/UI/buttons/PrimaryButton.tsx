@@ -31,13 +31,17 @@ export default function PrimaryButton(props: PrimaryButtonProps) {
       darkColor={Colors.dark.primary}
       android_ripple={{}}
       onPress={props.onPress}
-      style={{
-        height: props.height ?? 64,
-        width: props.fill ? "100%" : "auto",
-        paddingHorizontal: props.paddingHorizontal ?? 16,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+      style={[
+        {
+          height: props.height ?? 64,
+          width: props.fill ? "100%" : "auto",
+          paddingHorizontal: props.paddingHorizontal ?? 16,
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: 4,
+        },
+        props.style,
+      ]}
     >
       <ThemedText
         lightColor={Colors.light.text}

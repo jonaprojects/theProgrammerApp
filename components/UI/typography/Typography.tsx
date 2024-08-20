@@ -111,6 +111,29 @@ export function SecondaryText(props: TextProps) {
   );
 }
 
+export function ChipLabel(props: TextProps) {
+  return (
+    <ThemedText
+      style={[styles.chipLabel, props.style]}
+      lightColor={Colors.light.text}
+      darkColor={Colors.dark.text}
+    >
+      {props.children}
+    </ThemedText>
+  );
+}
+
+export function CourseCardTitle(props: TextProps) {
+  return (
+    <ThemedText
+      style={[styles.courseCardTitle, props.style]}
+      lightColor={Colors.light.text}
+      darkColor={Colors.dark.text}
+    >
+      {props.children}
+    </ThemedText>
+  );
+}
 const styles = StyleSheet.create({
   h1: {
     fontFamily: "Inter_700Bold",
@@ -145,15 +168,22 @@ const styles = StyleSheet.create({
   p: {
     fontFamily: "Heebo_400Regular",
     fontSize: 16,
-    lineHeight: 24
-
+    lineHeight: 24,
   },
   label: {
     fontFamily: "Heebo_400Regular",
     fontSize: 16,
   },
+  chipLabel: {
+    fontFamily: "Heebo_500Medium",
+    fontSize: 16,
+  },
   secondary: {
     fontFamily: "Heebo_400Regular",
     fontSize: 16,
+  },
+  courseCardTitle: {
+    fontFamily: "Heebo_700Bold",
+    fontSize: 20,
   },
 });

@@ -21,8 +21,9 @@ export const Colors = {
     tabBackgroundColor: "#fff",
     cardBackgroundColor: "#1B2129",
     optionBackgroundColor: "#29374B",
-    navbarBg: "#1A212C"
-
+    navbarBg: "#1A212C",
+    chipActive: "#00ADB5",
+    chipInactive: "#1A212C"
   },
   dark: {
     text: '#ECEDEE',
@@ -39,7 +40,9 @@ export const Colors = {
     tabBackgroundColor: "#1E242C",
     cardBackgroundColor: "#1B2129",
     optionBackgroundColor: "#29374B",
-    navbarBg: "#1B2129"
+    navbarBg: "#1B2129",
+    chipActive: "#00ADB5",
+    chipInactive: "#1A212C"
 
   },
 };
