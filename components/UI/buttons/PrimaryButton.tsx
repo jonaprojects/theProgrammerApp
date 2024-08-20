@@ -56,3 +56,16 @@ export default function PrimaryButton(props: PrimaryButtonProps) {
     </ThemedPressable>
   );
 }
+
+export function SmallPrimaryButton(props: PrimaryButtonProps) {
+  return (
+    <PrimaryButton
+      style={[props.style, { height: 40 }]}
+      textStyle={{
+        fontSize: 16,
+      }}
+    >
+      {props.children}
+    </PrimaryButton>
+  );
+}

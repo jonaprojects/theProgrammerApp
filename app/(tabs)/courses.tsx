@@ -6,22 +6,19 @@ import {
   View,
   ScrollView,
   FlatList,
-  Text,
 } from "react-native";
 
-import { Collapsible } from "@/components/Collapsible";
-import { ExternalLink } from "@/components/ExternalLink";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import Body from "@/components/UI/Body";
 import Container from "@/components/UI/Container";
 import { H1, H4 } from "@/components/UI/typography/Typography";
 import Chip from "@/components/UI/Chip";
+import CourseCard from "@/components/course_cards/CourseCard";
 import Course from "@/components/course_cards/Course";
 import Navbar from "@/components/UI/Navbar";
 
-type CourseType = {
+type course = {
   id: number;
   name: string;
   description: string;
@@ -29,7 +26,7 @@ type CourseType = {
   backgroundImg: number;
 };
 
-const COURSES: CourseType[] = [
+const COURSES: course[] = [
   {
     id: 0,
     name: "קורס תכנות בפייתון",
@@ -55,12 +52,13 @@ const COURSES: CourseType[] = [
     backgroundImg: require("@/assets/images/courses/pythonCourseCard.png"),
   },
 ];
-
 export default function Courses() {
   return (
-    <Body>
+    <Body style={{ flex: 1 }}>
       <Navbar />
-      <Container style={{ paddingHorizontal: 8, paddingTop: 48, gap: 32, flex: 1 }}>
+      <Container
+        style={{ flex: 1, paddingHorizontal: 8, paddingTop: 48, gap: 32 }}
+      >
         <View style={{ gap: 16 }}>
           <H1>קורסים</H1>
           <ScrollView
@@ -78,8 +76,8 @@ export default function Courses() {
           <H4>בשבילך</H4>
           <FlatList
             data={COURSES}
-            horizontal={false}
-            showsVerticalScrollIndicator={true}
+            horizontal={false} // Ensures vertical scrolling
+            showsVerticalScrollIndicator={false} // Shows the vertical scroll indicator
             renderItem={({ item }) => {
               return (
                 <Course
@@ -100,16 +98,3 @@ export default function Courses() {
     </Body>
   );
 }
-
-const styles = StyleSheet.create({
-  headerImage: {
-    color: "#808080",
-    bottom: -90,
-    left: -35,
-    position: "absolute",
-  },
-  titleContainer: {
-    flexDirection: "row",
-    gap: 8,
-  },
-});

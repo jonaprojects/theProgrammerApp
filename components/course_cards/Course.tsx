@@ -1,5 +1,5 @@
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
-import PrimaryButton from "../UI/buttons/PrimaryButton";
+import PrimaryButton, { SmallPrimaryButton } from "../UI/buttons/PrimaryButton";
 import { P } from "../UI/typography/Typography";
 import CourseCard from "./CourseCard";
 
@@ -21,14 +21,7 @@ export default function Course(props: CourseProps) {
     >
       <View style={styles.courseBody}>
         <P>{props.courseDescription}</P>
-        <PrimaryButton
-          style={{ height: 40 }}
-          textStyle={{
-            fontSize: 16,
-          }}
-        >
-          הירשם לקורס
-        </PrimaryButton>
+        <SmallPrimaryButton>הירשם לקורס</SmallPrimaryButton>
       </View>
     </CourseCard>
   );

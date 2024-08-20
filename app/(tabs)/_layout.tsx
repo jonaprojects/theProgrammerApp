@@ -13,7 +13,7 @@ import WeHaveTutorials from "../onboarding/tutorials";
 export default function Layout() {
   // const colorScheme = useColorScheme();
   //TODO: revert this later!
-  const colorScheme = 'dark'
+  const colorScheme = "dark";
 
   const tabs = (
     <Tabs
@@ -53,18 +53,28 @@ export default function Layout() {
             />
           ),
         }}
-      /> <Tabs.Screen
-      name="courses"
-      options={{
-        title: "קורסים",
-        tabBarIcon: ({ color, focused }) => (
-          <TabBarIcon
-            name={focused ? "book-outline" : "book-outline"}
-            color={color}
-          />
-        ),
-      }}
-    />
+      />{" "}
+      <Tabs.Screen
+        name="courses"
+        options={{
+          title: "קורסים",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? "search-outline" : "search-outline"} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="my_courses"
+        options={{
+          title: "הקורסים שלי",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon
+              name={focused ? "book-outline" : "book-outline"}
+              color={color}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
   return tabs;

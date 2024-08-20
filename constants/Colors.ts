@@ -23,7 +23,9 @@ export const Colors = {
     optionBackgroundColor: "#29374B",
     navbarBg: "#1A212C",
     chipActive: "#00ADB5",
-    chipInactive: "#1A212C"
+    chipInactive: "#1A212C",     
+    HorizontalprogressBg: "#1E242C",
+    HorizontalProgressLine: "#00ADB5"
   },
   dark: {
     text: '#ECEDEE',
@@ -42,7 +44,9 @@ export const Colors = {
     optionBackgroundColor: "#29374B",
     navbarBg: "#1B2129",
     chipActive: "#00ADB5",
-    chipInactive: "#1A212C"
+    chipInactive: "#1A212C",
+    HorizontalprogressBg: "#222223",
+    HorizontalProgressLine: "#00ADB5"
 
   },
 };

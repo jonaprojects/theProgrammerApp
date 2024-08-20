@@ -47,7 +47,6 @@ export default function CourseCard(props: CourseCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    justifyContent: "center",
     paddingVertical: 24,
     paddingHorizontal: 8,
     gap: 16,
@@ -60,8 +59,6 @@ const styles = StyleSheet.create({
   },
 
   backgroundImage: {
-    justifyContent: "center", // Centers content vertically
-    alignItems: "center", // Centers content horizontally
     width: "100%",
     maxHeight: 500,
     borderRadius: 4,
