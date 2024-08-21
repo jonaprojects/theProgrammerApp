@@ -61,6 +61,7 @@ export function SmallPrimaryButton(props: PrimaryButtonProps) {
   return (
     <PrimaryButton
       style={[props.style, { height: 40 }]}
+      onPress={props.onPress}
       textStyle={{
         fontSize: 16,
       }}

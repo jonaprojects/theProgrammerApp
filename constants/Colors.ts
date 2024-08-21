@@ -28,7 +28,7 @@ export const Colors = {
     HorizontalProgressLine: "#00ADB5"
   },
   dark: {
-    text: '#ECEDEE',
+    text: '#ffffff',
     secondaryText: "#DADADA",
     primary: "#00ADB5",
     background: '#222831',

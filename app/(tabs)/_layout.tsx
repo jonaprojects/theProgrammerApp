@@ -5,11 +5,6 @@ import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
-// Boarding screens
-import NewQuestions from "../onboarding/new_questions";
-import OurYoutube from "../onboarding/our_youtube";
-import WeHaveTutorials from "../onboarding/tutorials";
-
 export default function Layout() {
   // const colorScheme = useColorScheme();
   //TODO: revert this later!
@@ -53,13 +48,16 @@ export default function Layout() {
             />
           ),
         }}
-      />{" "}
+      />
       <Tabs.Screen
         name="courses"
         options={{
           title: "קורסים",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? "search-outline" : "search-outline"} color={color} />
+            <TabBarIcon
+              name={focused ? "search-outline" : "search-outline"}
+              color={color}
+            />
           ),
         }}
       />

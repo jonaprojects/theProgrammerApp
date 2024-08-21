@@ -13,6 +13,7 @@ type MyCourseProps = {
   currentLesson: number;
   numOfLessons: number;
   style: StyleProp<ViewStyle>;
+  navigateFn: () => void;
 };
 export default function MyCousrse(props: MyCourseProps) {
   return (
@@ -26,6 +27,7 @@ export default function MyCousrse(props: MyCourseProps) {
           השלמת {props.currentLesson - 1}/{props.numOfLessons} שיעורים
         </P>
         <SmallPrimaryButton
+          onPress={props.navigateFn}
           style={{
             width: 200,
             alignSelf: "flex-end",

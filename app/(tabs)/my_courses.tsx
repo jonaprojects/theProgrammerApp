@@ -3,6 +3,7 @@ import Body from "@/components/UI/Body";
 import Container from "@/components/UI/Container";
 import Navbar from "@/components/UI/Navbar";
 import { H1 } from "@/components/UI/typography/Typography";
+import { router } from "expo-router";
 import { FlatList, StyleSheet, View } from "react-native";
 
 // TODO: this data will be taken from different APIs in the future
@@ -13,6 +14,7 @@ type Course = {
   numOfLessons: number;
   backgroundImg: number;
   info?: string;
+  navigateFn: () => void;
 };
 
 const MY_COURSES: Course[] = [
@@ -23,6 +25,9 @@ const MY_COURSES: Course[] = [
     numOfLessons: 36,
     backgroundImg: require("@/assets/images/courses/pythonCourseCard.png"),
     info: "",
+    navigateFn: function (): void {
+      router.navigate("/tutorials/python/Intro");
+    },
   },
   {
     id: 1,
@@ -31,6 +36,9 @@ const MY_COURSES: Course[] = [
     numOfLessons: 24,
     backgroundImg: require("@/assets/images/courses/htmlCourseCard.png"),
     info: "",
+    navigateFn: function (): void {
+      throw new Error("Function not implemented.");
+    },
   },
   {
     id: 2,
@@ -39,6 +47,9 @@ const MY_COURSES: Course[] = [
     numOfLessons: 36,
     backgroundImg: require("@/assets/images/courses/pythonCourseCard.png"),
     info: "",
+    navigateFn: function (): void {
+      throw new Error("Function not implemented.");
+    },
   },
 ];
 export default function MyCourses() {
@@ -62,6 +73,7 @@ export default function MyCourses() {
                   currentLesson={item.currentLesson}
                   numOfLessons={item.numOfLessons}
                   style={{ marginBottom: 8 }}
+                  navigateFn={item.navigateFn}
                 />
               );
             }}

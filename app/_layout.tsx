@@ -23,6 +23,12 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
+// Onboarding screens
+import NewQuestions from "./onboarding/new_questions";
+import WeHaveTutorials from "./onboarding/tutorials";
+import OurYoutube from "./onboarding/our_youtube";
+
+// Force LTR
 import { I18nManager } from "react-native";
 I18nManager.forceRTL(false);
 I18nManager.allowRTL(false);
@@ -31,6 +37,7 @@ I18nManager.allowRTL(false);
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // Loading the fonts and the color scheme
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     Inter_400Regular,
