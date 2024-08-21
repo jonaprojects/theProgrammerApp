@@ -15,6 +15,7 @@ export default function PythonTutorialTemplate(props: PythonTutorialTemplate) {
       headerTitle={props.title}
       onNextPage={props.onNextPage}
       nextPageTitle={props.nextPageTitle}
+      tableOfContentsPath="/tutorials/python/CourseTableOfContents"
     >
       {props.children}
     </TutorialTemplate>

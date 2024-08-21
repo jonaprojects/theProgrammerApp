@@ -1,50 +1,46 @@
 import { H2 } from "@/components/UI/typography/Typography";
 import { Image } from "expo-image";
 import type { ImageStyle, StyleProp, ViewStyle } from "react-native";
-import { View, ImageBackground, StyleSheet } from "react-native";
+import { View, ImageBackground, StyleSheet, Pressable } from "react-native";
+import { Href, router } from "expo-router";
+import CourseHeader from "./CourseHeader";
 
 type TutorialHeaderProps = {
   backgroundImg: number;
   title: string;
   style?: StyleProp<ImageStyle>;
+  tableOfContentsPath: string;
 };
 
 export default function TutorialHeader(props: TutorialHeaderProps) {
   return (
-    <ImageBackground
-      source={props.backgroundImg}
-      resizeMode="cover"
-      style={[styles.backgroundImg, props.style]}
-    >
-      <View style={styles.content}>
-        <View style={styles.headerItems}>
-          <View style={styles.toolkit}>
-            <Image
-              source={require("@/assets/images/icons/favorite.svg")}
-              style={styles.icon}
-            />
+    <CourseHeader backgroundImg={props.backgroundImg}>
+      <View style={styles.headerItems}>
+        <View style={styles.toolkit}>
+          <Image
+            source={require("@/assets/images/icons/favorite.svg")}
+            style={styles.icon}
+          />
+          <Pressable
+            onPress={() => {
+              router.navigate(
+                props.tableOfContentsPath as Href<string | object>
+              );
+            }}
+          >
             <Image
               source={require("@/assets/images/icons/items.svg")}
               style={styles.icon}
             />
-          </View>
-          <H2>{props.title} </H2>
+          </Pressable>
         </View>
+        <H2>{props.title} </H2>
       </View>
-    </ImageBackground>
+    </CourseHeader>
   );
 }
 
 const styles = StyleSheet.create({
-  backgroundImg: {
-    minHeight: 200,
-    aspectRatio: 2,
-    width: "100%",
-    justifyContent: "center",
-  },
-  content: {
-    paddingHorizontal: 8,
-  },
   headerItems: {
     flexDirection: "row",
     justifyContent: "space-between",

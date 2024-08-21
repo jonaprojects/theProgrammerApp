@@ -18,17 +18,18 @@ type TutorialTemplateProps = PropsWithChildren<{
   headerTitle: string;
   onNextPage: () => void;
   nextPageTitle: string;
+  tableOfContentsPath: string;
   style?: StyleProp<ViewStyle>;
 }>;
 export default function TutorialTemplate(props: TutorialTemplateProps) {
   return (
     <Body>
       <Navbar />
-
       <TutorialHeader
         backgroundImg={props.headerBackgroundImg}
         title={props.headerTitle}
         style={styles.header}
+        tableOfContentsPath={props.tableOfContentsPath}
       />
       <Container style={styles.pageContent}>
         <ScrollView style={{ flex: 1 }}>
