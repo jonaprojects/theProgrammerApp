@@ -10,6 +10,7 @@ import { Colors } from "@/constants/Colors";
 import { H1 } from "@/components/UI/typography/Typography";
 import TopicProgress from "@/components/UI/topic_progress/TopicProgress";
 import { ScrollView } from "react-native";
+import Navbar from "@/components/UI/Navbar";
 export default function HomeScreen() {
   const [completedOnboarding, setCompletedOnboarding] = useState<string | null>(
     null
@@ -37,10 +38,11 @@ export default function HomeScreen() {
 
   return (
     <Body>
-      <H1 style={{ textAlign: "center", marginVertical: 32 }}>
-        תרגלת כבר היום?
-      </H1>
+      <Navbar />
       <ScrollView style={{ flex: 1 }}>
+        <H1 style={{ textAlign: "center", marginVertical: 32 }}>
+          תרגלת כבר היום?
+        </H1>
         <TopicProgress
           topic="תכנות מונחה עצמים"
           totalNumOfQuestions={25}

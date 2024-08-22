@@ -5,6 +5,7 @@ import { View, ImageBackground, StyleSheet, Pressable } from "react-native";
 import { Href, router } from "expo-router";
 import CourseHeader from "./CourseHeader";
 
+
 type TutorialHeaderProps = {
   backgroundImg: number;
   title: string;

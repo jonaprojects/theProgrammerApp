@@ -18,7 +18,7 @@ import {
 
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -39,6 +39,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   // Loading the fonts and the color scheme
   const colorScheme = useColorScheme();
+
   const [loaded] = useFonts({
     Inter_400Regular,
     Inter_700Bold,
