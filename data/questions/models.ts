@@ -7,7 +7,7 @@ export interface Question {
 
 export interface MultipleChoiceQuestion extends Question {
   correctAnswer: string;
-  incorrectAnswers: string[];
+  incorrectAnswers: [string, string, string];
 }
 
 export interface YesNoQuestion extends Question {

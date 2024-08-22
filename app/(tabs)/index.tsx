@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Platform, View, Text } from "react-native";
-import { useRootNavigationState, Redirect } from "expo-router";
+import { useRootNavigationState, Redirect, router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { HelloWave } from "@/components/HelloWave";
@@ -48,24 +48,36 @@ export default function HomeScreen() {
           totalNumOfQuestions={25}
           questionsAnswered={10}
           style={{ marginBottom: 8 }}
+          onPress={() => {
+            router.navigate("/(tabs)/exercise?topic=oop");
+          }}
         />
         <TopicProgress
           topic="פיתוח אתרים"
           totalNumOfQuestions={37}
           questionsAnswered={12}
           style={{ marginBottom: 8 }}
+          onPress={() => {
+            router.navigate("/(tabs)/exercise?topic=webdev");
+          }}
         />
         <TopicProgress
           topic="פייתון"
           totalNumOfQuestions={41}
           questionsAnswered={6}
           style={{ marginBottom: 8 }}
+          onPress={() => {
+            router.navigate("/(tabs)/exercise?topic=python");
+          }}
         />
         <TopicProgress
           topic="תקשורת ורשתות"
           totalNumOfQuestions={15}
           questionsAnswered={9}
           style={{ marginBottom: 8 }}
+          onPress={() => {
+            router.navigate("/(tabs)/exercise?topic=networks");
+          }}
         />
       </ScrollView>
     </Body>

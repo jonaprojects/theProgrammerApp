@@ -15,7 +15,7 @@ I18nManager.forceRTL(false); // Forces LTR layout
 
 type YesNoExerciseProps = {
   question: string;
-  correctAnswer: "yes" | "no";
+  correctAnswer: boolean;
   questionID: number;
   userAnswered: boolean;
 };

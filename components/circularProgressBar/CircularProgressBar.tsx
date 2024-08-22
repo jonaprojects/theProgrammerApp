@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 
 const STROKE_COLOR = "#00ADB5";
 const BACKGROUND_COLOR = "#151A21";
@@ -15,7 +15,9 @@ type CircularProgressBarProps = {
   completionRatio: number;
 };
 
-export default function CircularProgressBar({ completionRatio }: CircularProgressBarProps) {
+export default function CircularProgressBar({
+  completionRatio,
+}: CircularProgressBarProps) {
   const percent = decimalToPercentage(completionRatio);
 
   return (
@@ -50,16 +52,16 @@ export default function CircularProgressBar({ completionRatio }: CircularProgres
 
 const styles = StyleSheet.create({
   progressBarContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'flex-start', // Make sure the container only takes the space it needs
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "flex-start", // Make sure the container only takes the space it needs
   },
   progressText: {
     fontSize: 40,
-    color: 'rgba(256,256,256,0.7)',
-    position: 'absolute',
+    color: "rgba(256,256,256,0.7)",
+    position: "absolute",
   },
   svg: {
-    position: 'relative',
+    position: "relative",
   },
 });

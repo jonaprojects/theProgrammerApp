@@ -8,12 +8,16 @@ import { Pressable } from "react-native";
 type YesNoButtonProps = {
   type: "yes" | "no";
   userAnswered: boolean;
-  correctAnswer: "yes" | "no";
+  correctAnswer: boolean;
   questionId: number;
   onClick?: () => void;
 };
 export default function YesNoButton(props: YesNoButtonProps) {
   const [userClicked, setUserClicked] = useState(false);
+
+  // We get true/false in the props, but we actually
+  const isCorrectString = props.correctAnswer ? "yes" : "no";
+
   //   const [sound, playSound] = useSoundEffect();
 
   const onClickHandler = () => {
@@ -22,7 +26,8 @@ export default function YesNoButton(props: YesNoButtonProps) {
       // if the user has already answered, then do nothing and exit
     }
     setUserClicked(true);
-    if (props.correctAnswer === props.type) {
+
+    if (isCorrectString === props.type) {
       //   playSound(SOUNDS["correct"]);
     } else {
       //   playSound(SOUNDS["mistake"]);
@@ -34,7 +39,7 @@ export default function YesNoButton(props: YesNoButtonProps) {
 
   let backgroundColor = props.type === "yes" ? "#00ADB5" : "#1E2B3E";
   if (props.userAnswered) {
-    if (props.correctAnswer === props.type) {
+    if (isCorrectString === props.type) {
       backgroundColor = "#17bd2d";
     } else if (userClicked) {
       backgroundColor = "#cc143f";

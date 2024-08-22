@@ -1,42 +1,120 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet, Image, Platform } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  View,
+  I18nManager,
+  ActivityIndicator,
+  useColorScheme,
+} from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { Image } from "expo-image";
 
-import { Collapsible } from "@/components/Collapsible";
-import { ExternalLink } from "@/components/ExternalLink";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import Body from "@/components/UI/Body";
-import { Colors } from "@/constants/Colors";
-import { H4 } from "@/components/UI/typography/Typography";
-import PrimaryButton from "@/components/UI/buttons/PrimaryButton";
-import SecondaryButton from "@/components/UI/buttons/SecondaryButton";
-import { View } from "react-native";
-import Container from "@/components/UI/Container";
-import YesNoButton from "@/components/UI/buttons/YesNoButton";
-
-import { I18nManager } from "react-native";
-import YesNoExercise from "@/components/exercises/YesNoExercise";
-import MultipleOptionExercise from "@/components/exercises/MultipleOptionExercise";
 import Navbar from "@/components/UI/Navbar";
+import Body from "@/components/UI/Body";
+import MultipleOptionExercise from "@/components/exercises/MultipleOptionExercise";
+import { loadQuestions } from "@/data/questions/loadData";
+import {
+  MultipleChoiceQuestion,
+  Question,
+  Questions,
+  YesNoQuestion,
+} from "@/data/questions/models";
+import { Colors } from "@/constants/Colors";
+import { getShuffledOptions } from "@/data/questions/processData";
+import YesNoExercise from "@/components/exercises/YesNoExercise";
 
 I18nManager.forceRTL(false); // Forces LTR layout
 
+interface ExerciseSearchParams {
+  topic: string;
+}
+
 export default function Exercise() {
+  const params = useLocalSearchParams();
+  const colorScheme = useColorScheme();
+
+  // Use type assertion to specify the type of `params`
+  const { topic } = params as unknown as ExerciseSearchParams;
+  const [questions, setQuestions] = useState<null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<unknown | null>(null);
+
+  // load the questions when the component is loaded
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const res = await loadQuestions(topic);
+        setQuestions(res);
+      } catch (e) {
+        setError(e);
+      }
+    };
+    setLoading(true); // Start loading
+    loadData();
+    setLoading(false); // Finish loading
+
+    // We want to repeat this each time the URL parameters change!
+  }, [params]);
+
+  useEffect(() => {
+    if (!loading && !error && questions !== null) {
+      const questionIndex = 0;
+      const questionObj = questions[questionIndex];
+      setCurrentQuestion(questionObj);
+    }
+  }, [questions]);
+
+  let currentQuestionJSX = null;
+
+  if (currentQuestion !== null) {
+    if (currentQuestion.type === "multiple") {
+      const multipleQuestionObj = currentQuestion as MultipleChoiceQuestion;
+
+      const [shuffledArray, correctIndex] = getShuffledOptions(
+        multipleQuestionObj.correctAnswer,
+        multipleQuestionObj.incorrectAnswers
+      );
+      currentQuestionJSX = (
+        <MultipleOptionExercise
+          question={multipleQuestionObj.question}
+          questionID={multipleQuestionObj.id}
+          options={shuffledArray}
+        />
+      );
+    } else {
+      const yesNoQuestion = currentQuestion as YesNoQuestion;
+      currentQuestionJSX = (
+        <YesNoExercise
+          question={yesNoQuestion.question}
+          correctAnswer={yesNoQuestion.correctAnswer}
+          questionID={yesNoQuestion.id}
+          userAnswered={false}
+        />
+      );
+    }
+  }
+
   return (
     <Body>
       <Navbar />
-      <View
-        style={{
-          flex: 1,
-        }}
-      >
-        <MultipleOptionExercise
-          question="מתי פותחה שפת פייתון?"
-          questionID={0}
-          options={["1991", "1974", "1979", "2004"]}
-        />
-      </View>
+      {loading && (
+        <View style={styles.loadingSpinnerContainer}>
+          <ActivityIndicator
+            size="large"
+            color={Colors[colorScheme ?? "dark"].primary}
+          />
+        </View>
+      )}
+      {!loading && !error && currentQuestionJSX !== null && (
+        <View
+          style={{
+            flex: 1,
+          }}
+        >
+          {currentQuestionJSX}
+        </View>
+      )}
 
       {/* <YesNoExercise
           correctAnswer="yes"
@@ -48,4 +126,10 @@ export default function Exercise() {
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  loadingSpinnerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});

@@ -13,6 +13,7 @@ type TopicProgressProps = {
   questionsAnswered: number;
   topic: string;
   style?: StyleProp<ViewStyle>;
+  onPress: () => void;
 };
 
 export default function TopicProgress(props: TopicProgressProps) {
@@ -21,6 +22,7 @@ export default function TopicProgress(props: TopicProgressProps) {
       darkColor={Colors.dark.cardBackgroundColor}
       lightColor={Colors.light.cardBackgroundColor}
       style={[styles.container, props.style]}
+      onPress={props.onPress}
     >
       <ThemedView style={styles.contentContainer}>
         <H4>{props.topic}</H4>
