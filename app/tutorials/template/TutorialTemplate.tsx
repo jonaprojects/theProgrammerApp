@@ -25,23 +25,24 @@ export default function TutorialTemplate(props: TutorialTemplateProps) {
   return (
     <Body>
       <Navbar />
-      <TutorialHeader
-        backgroundImg={props.headerBackgroundImg}
-        title={props.headerTitle}
-        style={styles.header}
-        tableOfContentsPath={props.tableOfContentsPath}
-      />
-      <Container style={styles.pageContent}>
-        <ScrollView style={{ flex: 1 }}>
+
+      <ScrollView style={{ flex: 1, marginBottom: 32 }}>
+        <TutorialHeader
+          backgroundImg={props.headerBackgroundImg}
+          title={props.headerTitle}
+          style={styles.header}
+          tableOfContentsPath={props.tableOfContentsPath}
+        />
+        <Container style={styles.pageContent}>
           {props.children}
 
           <NextPage
-            style={{ marginTop: 32 }}
+            style={{ marginTop: 16 }}
             onNextPage={props.onNextPage}
             nextPageTitle={props.nextPageTitle}
           />
-        </ScrollView>
-      </Container>
+        </Container>
+      </ScrollView>
     </Body>
   );
 }

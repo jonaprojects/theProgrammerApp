@@ -2,9 +2,8 @@ import { router, useNavigation } from "expo-router";
 import PythonTutorialTemplate from "./PythonTutorialTemplate";
 import { useEffect } from "react";
 import { P } from "@/components/UI/typography/Typography";
-import CodeSnippet from "@/components/UI/code_snippets/CodeSnippet";
 
-export default function Installation() {
+export default function FirstPythonProgram() {
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -13,21 +12,19 @@ export default function Installation() {
 
   return (
     <PythonTutorialTemplate
-      title={"פייתון - התקנה"}
+      title={"תוכנית ראשונה בפייתון"}
       onNextPage={function (): void {
-        router.navigate("/tutorials/python/FirstPythonProgram");
+        router.navigate("/tutorials/python/Intro");
       }}
-      nextPageTitle="תוכנית ראשונה בפייתון"
+      nextPageTitle=""
     >
       <P style={{ marginBottom: 16 }}>
-        ניתן להתקין את פייתון באתר הרשמי של פייתון. מומלץ להתקין את גרסה 3 של
-        פייתון והלאה, שכן גרסה 2 כבר אינה בשימוש נרחב. בנוסף, קוד שנכתב ב
-        python2 לא יהיה בהכרח תקין בpython3 ולהפך.
+        סוף סוף לאחר ההתקנה ,נתחיל באמת לכתוב קוד ולהתנסות בעצמנו בתכנות - מכאן
+        והלאה נתחיל ״ללכלך את הידיים״ שלנו וללמוד את הדברים המעניינים באמת.
       </P>
       <P style={{ marginBottom: 16 }}>
-        לאחר הורדת קובץ ההתקנה, תצטרכו לפתוח אותו ולאשר את שלבי ההתקנה. אם
-        מופיעה האופציה, יש לבחור להוסיף את python למשתני הסביבה של המערכת (ב
-        windows, למשתנה PATH).
+        נפתח את עורך הקוד שלנו וניצור קובץ חדש בשם first.py. הסיומת py מסמלת
+        שזהו אכן קובץ פייתון.
       </P>
       <P style={{ marginBottom: 16 }}>
         משתני הסביבה הם משתנים גלובליים אשר זמינים במערכת ההפעלה ובשורת הפקודה

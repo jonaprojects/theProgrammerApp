@@ -30,6 +30,7 @@ import OurYoutube from "./onboarding/our_youtube";
 
 // Force LTR
 import { I18nManager } from "react-native";
+import EnterYourName from "./onboarding/enter_your_name";
 I18nManager.forceRTL(false);
 I18nManager.allowRTL(false);
 

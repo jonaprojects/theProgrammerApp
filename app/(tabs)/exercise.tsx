@@ -35,7 +35,7 @@ export default function Exercise() {
 
   // Use type assertion to specify the type of `params`
   const { topic } = params as unknown as ExerciseSearchParams;
-  const [questions, setQuestions] = useState<null>(null);
+  const [questions, setQuestions] = useState<Questions | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<unknown | null>(null);

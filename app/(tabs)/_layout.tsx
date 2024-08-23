@@ -4,6 +4,9 @@ import React from "react";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import WeHaveTutorials from "../onboarding/tutorials";
+import OurYoutube from "../onboarding/our_youtube";
+import NewQuestions from "../onboarding/new_questions";
 
 export default function Layout() {
   // const colorScheme = useColorScheme();
@@ -75,5 +78,7 @@ export default function Layout() {
       />
     </Tabs>
   );
+
+  return <NewQuestions />;
   return tabs;
 }

@@ -1,28 +1,22 @@
-import React from "react";
-import { View, StyleSheet, Image } from "react-native";
+import React, { type PropsWithChildren } from "react";
+import { View, StyleSheet, Image, Text } from "react-native";
 import Body from "@/components/UI/Body";
 import PrimaryButton from "@/components/UI/buttons/PrimaryButton";
 import Container from "@/components/UI/Container";
 import { H1, SecondaryText } from "@/components/UI/typography/Typography";
 import Progress from "@/components/UI/page_progress/Progress";
-import { router } from "expo-router";
 
-import {
-  GestureDetector,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 
 import type { ImageSourcePropType } from "react-native";
 
-type onboardingProps = {
+type onboardingProps = PropsWithChildren<{
   illustration: ImageSourcePropType;
-  title: string;
-  description: string;
   index: number;
   numOfPages: number;
   moveToNextPage: () => void;
-};
+}>;
 
 export default function OnboardingPage(props: onboardingProps) {
   return (
@@ -42,13 +36,7 @@ export default function OnboardingPage(props: onboardingProps) {
               />
             </View>
             <View style={styles.bottomContainer}>
-              <View style={styles.textContainer}>
-                <H1 style={{ textAlign: "center" }}>{props.title}</H1>
-                <SecondaryText style={{ textAlign: "center" }}>
-                  {props.description}
-                </SecondaryText>
-              </View>
-
+              {props.children}
               <PrimaryButton onPress={props.moveToNextPage}>המשך</PrimaryButton>
             </View>
           </View>
@@ -60,14 +48,17 @@ export default function OnboardingPage(props: onboardingProps) {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "center",
+    flex: 1,
   },
   contentContainer: {
+    alignItems: "center",
+    justifyContent: "center",
     gap: 48,
+    flex: 1,
   },
   bottomContainer: {
-    justifyContent: "space-between",
     gap: 48,
+    width: "100%",
   },
   textContainer: {
     gap: 16,
@@ -83,9 +74,7 @@ const styles = StyleSheet.create({
     height: "100%", // Ensures the image covers the container while maintaining aspect ratio
   },
   progressContainer: {
-    position: "absolute",
-    top: 48,
-    left: 16,
-    right: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
 });

@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
-import OnboardingPage from "@/components/page_templates/OnboardingPage";
+import OnboardingPageWithDescription from "@/components/page_templates/OnboardingPageWithDescription";
 import { router, useNavigation } from "expo-router";
 
 export default function NewQuestions() {
-
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -11,12 +10,12 @@ export default function NewQuestions() {
   }, [navigation]);
 
   return (
-    <OnboardingPage
+    <OnboardingPageWithDescription
       illustration={require("@/assets/images/illustrations/spaceIllustration.png")}
       title="מאות שאלות חדשות!"
       description="למדו תכנות עם מאות שאלות בנושאים שונים כגון פיתוח אתרים, תכנות מונחה עצמים, סייבר, תקשורת ועוד..."
       index={1}
-      numOfPages={3}
+      numOfPages={4}
       moveToNextPage={() => {
         router.navigate("/onboarding/tutorials");
       }}
