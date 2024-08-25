@@ -5,7 +5,7 @@ const RTLScrollView = forwardRef(function RTLScrollView(
   props: ScrollViewProps,
   ref
 ) {
-  const scrollViewRef = useRef();
+  const scrollViewRef = useRef<ScrollView>();
 
   useEffect(() => {
     // Automatically scroll to the end (right) when the component mounts

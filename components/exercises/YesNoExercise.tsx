@@ -44,19 +44,12 @@ export default function YesNoExercise(props: YesNoExerciseProps) {
             correctAnswer={props.correctAnswer}
           />
         </View>
-        <View style={styles.buttonsContainer}>
-          <PrimaryButton>הצג פתרון</PrimaryButton>
-          <SecondaryButton>דלג</SecondaryButton>
-        </View>
       </ThemedView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  buttonsContainer: {
-    gap: 8,
-  },
   optionsContainer: {
     flexDirection: "row",
     gap: 16,

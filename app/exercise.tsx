@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import {
   StyleSheet,
   View,
   I18nManager,
   ActivityIndicator,
   useColorScheme,
+  ScrollView,
 } from "react-native";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { Image } from "expo-image";
@@ -22,6 +23,9 @@ import {
 import { Colors } from "@/constants/Colors";
 import { getShuffledOptions } from "@/data/questions/processData";
 import YesNoExercise from "@/components/exercises/YesNoExercise";
+import PrimaryButton from "@/components/UI/buttons/PrimaryButton";
+import SecondaryButton from "@/components/UI/buttons/SecondaryButton";
+import Container from "@/components/UI/Container";
 
 I18nManager.forceRTL(false); // Forces LTR layout
 
@@ -35,8 +39,9 @@ export default function Exercise() {
 
   // Use type assertion to specify the type of `params`
   const { topic } = params as unknown as ExerciseSearchParams;
+
   const [questions, setQuestions] = useState<Questions | null>(null);
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<unknown | null>(null);
 
@@ -45,6 +50,7 @@ export default function Exercise() {
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
+
   // load the questions when the component is loaded
   useEffect(() => {
     const loadData = async () => {
@@ -62,13 +68,23 @@ export default function Exercise() {
     // We want to repeat this each time the URL parameters change!
   }, [params]);
 
-  useEffect(() => {
-    if (!loading && !error && questions !== null) {
-      const questionIndex = 0;
-      const questionObj = questions[questionIndex];
-      setCurrentQuestion(questionObj);
+  const onSkipHandler = () => {
+    if (!questions) {
+      //TODO: Show some kind of error message
+      return;
     }
-  }, [questions]);
+    setCurrentQuestionIndex((prevIndex) => {
+      if (prevIndex < questions.length) {
+        return prevIndex + 1;
+      }
+      return prevIndex;
+    });
+  };
+
+  let currentQuestion = null;
+  if (questions !== null && !loading && !error) {
+    currentQuestion = questions[currentQuestionIndex];
+  }
 
   let currentQuestionJSX = null;
 
@@ -103,30 +119,46 @@ export default function Exercise() {
   return (
     <Body>
       <Navbar />
-      {loading && (
-        <View style={styles.loadingSpinnerContainer}>
-          <ActivityIndicator
-            size="large"
-            color={Colors[colorScheme ?? "dark"].primary}
-          />
-        </View>
-      )}
-      {!loading && !error && currentQuestionJSX !== null && (
-        <View
-          style={{
-            flex: 1,
-          }}
-        >
-          {currentQuestionJSX}
-        </View>
-      )}
+      <ScrollView>
+        {loading && (
+          <View style={styles.loadingSpinnerContainer}>
+            <ActivityIndicator
+              size="large"
+              color={Colors[colorScheme ?? "dark"].primary}
+            />
+          </View>
+        )}
+        {!loading && !error && currentQuestionJSX !== null && (
+          <View
+            style={{
+              flex: 1,
+            }}
+          >
+            {currentQuestionJSX}
+            <Container>
+              <View style={styles.buttonsContainer}>
+                <PrimaryButton height={56} textStyle={{ fontSize: 18 }}>
+                  הצג פתרון
+                </PrimaryButton>
+                <SecondaryButton
+                  height={56}
+                  textStyle={{ fontSize: 18 }}
+                  onPress={onSkipHandler}
+                >
+                  דלג
+                </SecondaryButton>
+              </View>
+            </Container>
+          </View>
+        )}
 
-      {/* <YesNoExercise
+        {/* <YesNoExercise
           correctAnswer="yes"
           question="פייתון פותחה בשנות ה-50 של המאה ה-20 על ידי מדען המחשב דניס ריצ'י."
           questionID={0}
           userAnswered={false}
         /> */}
+      </ScrollView>
     </Body>
   );
 }
@@ -136,5 +168,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  buttonsContainer: {
+    gap: 8,
+    marginTop: 36,
   },
 });

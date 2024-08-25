@@ -21,22 +21,13 @@ export default function MultipleOptionExercise(
         <QuestionHeader question={props.question} />
       </View>
 
-      <ScrollView >
-        <Container >
+      <ScrollView>
+        <Container>
           <View style={styles.optionsContainer}>
             <Option text={props.options[0]} index={0} />
             <Option text={props.options[1]} index={1} />
             <Option text={props.options[2]} index={2} />
             <Option text={props.options[3]} index={3} />
-          </View>
-
-          <View style={styles.buttonsContainer}>
-            <PrimaryButton height={56} textStyle={{ fontSize: 18 }}>
-              הצג פתרון
-            </PrimaryButton>
-            <SecondaryButton height={56} textStyle={{ fontSize: 18 }}>
-              דלג
-            </SecondaryButton>
           </View>
         </Container>
       </ScrollView>
@@ -51,9 +42,5 @@ const styles = StyleSheet.create({
   optionsContainer: {
     marginTop: 36,
     gap: 16,
-  },
-  buttonsContainer: {
-    gap: 8,
-    marginTop: 36,
   },
 });

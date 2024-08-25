@@ -80,6 +80,24 @@ export default function ExerciseScreen() {
             router.navigate("/exercise?topic=networks");
           }}
         />
+        <TopicProgress
+          topic="שפת C"
+          totalNumOfQuestions={41}
+          questionsAnswered={4}
+          style={{ marginBottom: 8 }}
+          onPress={() => {
+            router.navigate("/exercise?topic=clang");
+          }}
+        />
+        <TopicProgress
+          topic="שפת אסמבלי"
+          totalNumOfQuestions={26}
+          questionsAnswered={1}
+          style={{ marginBottom: 8 }}
+          onPress={() => {
+            router.navigate("/exercise?topic=assembly");
+          }}
+        />
       </ScrollView>
     </Body>
   );

@@ -62,6 +62,7 @@ export default function Home() {
                     router.navigate("/exercise?topic=webdev");
                   }}
                 />
+                
               </View>
             </View>
             <View>

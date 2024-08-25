@@ -146,6 +146,19 @@ export function CourseCardTitle(props: TextProps) {
     </ThemedText>
   );
 }
+
+export function OptionText(props: TextProps) {
+  return (
+    <ThemedText
+      style={[styles.exerciseOption, props.style]}
+      lightColor={Colors.light.text}
+      darkColor={Colors.dark.text}
+    >
+      {props.children}
+    </ThemedText>
+  );
+}
+
 const styles = StyleSheet.create({
   h1: {
     fontFamily: "Inter_700Bold",
@@ -201,5 +214,9 @@ const styles = StyleSheet.create({
   courseCardTitle: {
     fontFamily: "Heebo_700Bold",
     fontSize: 20,
+  },
+  exerciseOption: {
+    fontFamily: "Heebo_400Regular",
+    fontSize: 18,
   },
 });

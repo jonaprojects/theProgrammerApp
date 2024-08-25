@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import { ThemedPressable } from "../ThemedPressable";
-import { H5 } from "../UI/typography/Typography";
+import { H5, OptionText } from "../UI/typography/Typography";
 import { Colors } from "@/constants/Colors";
 
 type OptionProps = {
@@ -17,8 +17,10 @@ export default function Option(props: OptionProps) {
       lightColor={Colors.light.optionBackgroundColor}
       style={styles.container}
     >
-      <H5 style={styles.letter}>{hebrewLetters[props.index]}.</H5>
-      <H5>{props.text}</H5>
+      <View style={styles.items}>
+        <H5 style={styles.letter}>{hebrewLetters[props.index]}.</H5>
+        <OptionText style={styles.text}>{props.text}</OptionText>
+      </View>
     </ThemedPressable>
   );
 }
@@ -30,9 +32,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 16,
     paddingHorizontal: 16,
+    width: "100%", // Ensures container takes full width
   },
   letter: {
-    position: "absolute",
-    right: 8
+    textAlign: "center",
+  },
+  items: {
+    flex: 1,
+    flexDirection: "row-reverse",
+    justifyContent: "space-between",
+    alignItems: "center", // Align items vertically center
+    gap: 12,
+  },
+  text: {
+    flex: 1, // Allows text to take remaining space
+    textAlign: "center",
+    flexWrap: "wrap", // Allows text to wrap
   },
 });
