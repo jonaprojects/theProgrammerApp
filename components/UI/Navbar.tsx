@@ -22,15 +22,27 @@ export default function Navbar() {
             height: 32,
           }}
         />
-        <View style={styles.profileDataContainer}>
-          <Image
-            source={UserIconsMap[letterToIndexMapper["י"]]}
-            style={{
-              width: 32,
-              height: 32,
-            }}
-          />
-          <H6>יהונתן</H6>
+        <View style={styles.navbarRightPanel}>
+          <View style={styles.pointsContainer}>
+            <Image
+              source={require("@/assets/images/icons/trophy.svg")}
+              style={{
+                width: 32,
+                height: 32,
+              }}
+            />
+            <H6>0</H6>
+          </View>
+          <View style={styles.profileDataContainer}>
+            <Image
+              source={UserIconsMap[letterToIndexMapper["י"]]}
+              style={{
+                width: 32,
+                height: 32,
+              }}
+            />
+            <H6>יהונתן</H6>
+          </View>
         </View>
       </Container>
     </ThemedView>
@@ -42,11 +54,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
   profileDataContainer: {
     flexDirection: "row",
     gap: 8,
+    alignItems: "center",
+  },
+  navbarRightPanel: {
+    flexDirection: "row",
+    gap: 32,
+  },
+  pointsContainer: {
+    gap: 8,
+    flexDirection: "row",
     alignItems: "center",
   },
 });

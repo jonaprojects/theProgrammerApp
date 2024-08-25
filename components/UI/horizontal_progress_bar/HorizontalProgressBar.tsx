@@ -1,10 +1,11 @@
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
-import { Text, View } from "react-native";
+import { StyleProp, Text, View, ViewStyle } from "react-native";
 import { H6 } from "../typography/Typography";
 
 type HorizontalProgressBarProps = {
   percentage: number;
+  style?: StyleProp<ViewStyle>;
 };
 
 export default function HorizontalProgressBar(
@@ -16,11 +17,14 @@ export default function HorizontalProgressBar(
     <ThemedView
       darkColor={Colors.dark.HorizontalprogressBg}
       lightColor={Colors.light.HorizontalprogressBg}
-      style={{
-        width: "100%",
-        height: 30,
-        borderRadius: 16,
-      }}
+      style={[
+        {
+          width: "100%",
+          height: 30,
+          borderRadius: 16,
+        },
+        props.style,
+      ]}
     >
       <ThemedView
         darkColor={Colors.dark.HorizontalProgressLine}

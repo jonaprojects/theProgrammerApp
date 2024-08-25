@@ -27,6 +27,8 @@ export const Colors = {
     HorizontalprogressBg: "#1E242C",
     HorizontalProgressLine: "#00ADB5",
     inputBorder: "#00ADB5",
+    uncompletedTask: "#333B47",
+    completedTask: "#34464D",
   },
   dark: {
     text: "#ffffff",
@@ -49,5 +51,7 @@ export const Colors = {
     HorizontalprogressBg: "#222223",
     HorizontalProgressLine: "#00ADB5",
     inputBorder: "#00ADB5",
+    uncompletedTask: "#333B47",
+    completedTask: "#34464D",
   },
 };

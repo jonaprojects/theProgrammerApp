@@ -12,10 +12,10 @@ type MyCourseProps = {
   info?: string;
   currentLesson: number;
   numOfLessons: number;
-  style: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
   navigateFn: () => void;
 };
-export default function MyCousrse(props: MyCourseProps) {
+export default function MyCourse(props: MyCourseProps) {
   return (
     <CourseCard
       courseName={props.courseName}

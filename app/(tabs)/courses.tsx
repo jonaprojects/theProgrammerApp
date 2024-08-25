@@ -6,6 +6,7 @@ import {
   View,
   ScrollView,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -17,6 +18,8 @@ import Chip from "@/components/UI/Chip";
 import CourseCard from "@/components/course_cards/CourseCard";
 import Course from "@/components/course_cards/Course";
 import Navbar from "@/components/UI/Navbar";
+import { useEffect, useRef, useState } from "react";
+import RTLScrollView from "@/components/UI/RTLScrollView";
 
 type course = {
   id: number;
@@ -53,48 +56,69 @@ const COURSES: course[] = [
   },
 ];
 export default function Courses() {
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState();
+  const scrollViewRef = useRef();
+
+  useEffect(() => {
+    setLoading(true);
+    const loadCourses = async () => {
+      //... Load the courses from an API
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    };
+    setLoading(false);
+
+    loadCourses();
+  }, []);
+
   return (
     <Body style={{ flex: 1 }}>
       <Navbar />
-      <Container
-        style={{ flex: 1, paddingHorizontal: 8, paddingTop: 48, gap: 32 }}
-      >
-        <View style={{ gap: 16 }}>
-          <H1>קורסים</H1>
-          <ScrollView
-            style={{ flexDirection: "row" }}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-          >
-            <Chip text="תכנות מונחה עצמים" style={{ marginRight: 4 }} />
-            <Chip text="אבטחת מידע" style={{ marginRight: 4 }} />
-            <Chip text="פייתון" style={{ marginRight: 4 }} />
-            <Chip text="פיתוח אתרים" />
-          </ScrollView>
+
+      {loading && (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" />
         </View>
-        <View style={{ flex: 1, gap: 16 }}>
-          <H4>בשבילך</H4>
-          <FlatList
-            data={COURSES}
-            horizontal={false} // Ensures vertical scrolling
-            showsVerticalScrollIndicator={false} // Shows the vertical scroll indicator
-            renderItem={({ item }) => {
-              return (
-                <Course
-                  courseName={item.name}
-                  courseBgImage={item.backgroundImg}
-                  courseDescription={item.description}
-                  courseID={item.id}
-                  style={{
-                    marginBottom: 8,
-                  }}
-                />
-              );
-            }}
-            keyExtractor={(course) => `${course.id}`}
-          />
-        </View>
-      </Container>
+      )}
+      {!loading && (
+        <Container
+          style={{ flex: 1, paddingHorizontal: 8, paddingTop: 48, gap: 32 }}
+        >
+          <View style={{ gap: 16 }}>
+            <H1>קורסים</H1>
+            <RTLScrollView>
+              <Chip text="תכנות מונחה עצמים" style={{ marginRight: 4 }} />
+              <Chip text="אבטחת מידע" style={{ marginRight: 4 }} />
+              <Chip text="פייתון" style={{ marginRight: 4 }} />
+              <Chip text="פיתוח אתרים" />
+            </RTLScrollView>
+          </View>
+          <View style={{ flex: 1, gap: 16 }}>
+            <H4>בשבילך</H4>
+            <FlatList
+              data={COURSES}
+              horizontal={false} // Ensures vertical scrolling
+              showsVerticalScrollIndicator={false} // Shows the vertical scroll indicator
+              renderItem={({ item }) => {
+                return (
+                  <Course
+                    courseName={item.name}
+                    courseBgImage={item.backgroundImg}
+                    courseDescription={item.description}
+                    courseID={item.id}
+                    style={{
+                      marginBottom: 8,
+                    }}
+                  />
+                );
+              }}
+              keyExtractor={(course) => `${course.id}`}
+            />
+          </View>
+        </Container>
+      )}
     </Body>
   );
 }

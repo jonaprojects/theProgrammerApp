@@ -1,85 +1,86 @@
-import { Image, StyleSheet, Platform, View, Text } from "react-native";
-import { useRootNavigationState, Redirect, router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { useEffect, useState } from "react";
+import MyCourse from "@/components/course_cards/MyCourse";
+import Task from "@/components/tasks/Task";
 import Body from "@/components/UI/Body";
-import { Colors } from "@/constants/Colors";
-import { H1 } from "@/components/UI/typography/Typography";
-import TopicProgress from "@/components/UI/topic_progress/TopicProgress";
-import { ScrollView } from "react-native";
+import Container from "@/components/UI/Container";
 import Navbar from "@/components/UI/Navbar";
-export default function HomeScreen() {
-  const [completedOnboarding, setCompletedOnboarding] = useState<string | null>(
-    null
-  );
+import TopicProgress from "@/components/UI/topic_progress/TopicProgress";
+import { H4 } from "@/components/UI/typography/Typography";
+import { router } from "expo-router";
+import React from "react";
+import { View } from "react-native";
+import { FlatList } from "react-native";
 
-  useEffect(() => {
-    async function checkCompletedOnboarding() {
-      try {
-        const value = await AsyncStorage.getItem("Completed_Onboarding");
-        setCompletedOnboarding(value);
-      } catch (e) {
-        // error reading value
-      }
-    }
+type Task = {
+  id: number;
+  name: string;
+  status: "complete" | "incomplete";
+  progress: number;
+};
+const DUMMY_TASKS: Task[] = [
+  {
+    id: 0,
+    name: "פתרו 10 תרגילים נכון ברציפות",
+    status: "incomplete",
+    progress: 40,
+  },
+  {
+    id: 1,
+    name: "להירשם לקורס אחד לפחות",
+    status: "complete",
+    progress: 100,
+  },
+];
 
-    checkCompletedOnboarding();
-  }, []);
-  const rootNavigationState = useRootNavigationState();
-
-  if (!rootNavigationState?.key) return null;
-
-  if (completedOnboarding === "false") {
-    return <Redirect href="/onboarding/new_questions" />;
-  }
-
+export default function Home() {
   return (
     <Body>
       <Navbar />
-      <ScrollView style={{ flex: 1 }}>
-        <H1 style={{ textAlign: "center", marginVertical: 32 }}>
-          תרגלת כבר היום?
-        </H1>
-        <TopicProgress
-          topic="תכנות מונחה עצמים"
-          totalNumOfQuestions={25}
-          questionsAnswered={10}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/(tabs)/exercise?topic=oop");
-          }}
-        />
-        <TopicProgress
-          topic="פיתוח אתרים"
-          totalNumOfQuestions={37}
-          questionsAnswered={12}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/(tabs)/exercise?topic=webdev");
-          }}
-        />
-        <TopicProgress
-          topic="פייתון"
-          totalNumOfQuestions={41}
-          questionsAnswered={6}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/(tabs)/exercise?topic=python");
-          }}
-        />
-        <TopicProgress
-          topic="תקשורת ורשתות"
-          totalNumOfQuestions={15}
-          questionsAnswered={9}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/(tabs)/exercise?topic=networks");
-          }}
-        />
-      </ScrollView>
+      <FlatList
+        ListHeaderComponent={
+          <Container>
+            <View style={{ gap: 16, marginTop: 32, marginBottom: 24 }}>
+              <View style={{ gap: 8 }}>
+                <H4>המשך מאיפה שעצרת</H4>
+              </View>
+              <View style={{ gap: 8 }}>
+                <MyCourse
+                  courseID={0}
+                  courseName={"מבוא לפייתון"}
+                  backgroundImg={require("@/assets/images/courses/pythonCourseCard.png")}
+                  currentLesson={5}
+                  numOfLessons={24}
+                  navigateFn={() => {
+                    router.navigate("/(tabs)/my_courses");
+                  }}
+                />
+                <TopicProgress
+                  topic="פיתוח אתרים"
+                  totalNumOfQuestions={37}
+                  questionsAnswered={12}
+                  style={{ marginBottom: 8 }}
+                  onPress={() => {
+                    router.navigate("/exercise?topic=webdev");
+                  }}
+                />
+              </View>
+            </View>
+            <View>
+              <H4 style={{ marginBottom: 16 }}>משימות</H4>
+            </View>
+          </Container>
+        }
+        data={DUMMY_TASKS}
+        renderItem={({ item }) => (
+          <Task
+            isCompleted={item.status === "complete"}
+            name={item.name}
+            progress={item.progress}
+            onPress={() => console.log(item.name)}
+            style={{ marginBottom: 8 }}
+          />
+        )}
+        keyExtractor={(item) => item.id.toString()}
+      />
     </Body>
   );
 }

@@ -41,7 +41,7 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="exercise"
+        name="exercises"
         options={{
           title: "תרגול",
           tabBarIcon: ({ color, focused }) => (
@@ -79,6 +79,6 @@ export default function Layout() {
     </Tabs>
   );
 
-  return <NewQuestions />;
+  // return <NewQuestions />;
   return tabs;
 }

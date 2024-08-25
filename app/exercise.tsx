@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   useColorScheme,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import { Image } from "expo-image";
 
 import Navbar from "@/components/UI/Navbar";
@@ -40,6 +40,11 @@ export default function Exercise() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<unknown | null>(null);
 
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
   // load the questions when the component is loaded
   useEffect(() => {
     const loadData = async () => {

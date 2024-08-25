@@ -11,7 +11,7 @@ import Body from "@/components/UI/Body";
 import Navbar from "@/components/UI/Navbar";
 import { PropsWithChildren } from "react";
 import Container from "@/components/UI/Container";
-import NextPage from "@/assets/tutorials/NextPage";
+import NextPage from "@/components/tutorials/NextPage";
 
 type TutorialTemplateProps = PropsWithChildren<{
   headerBackgroundImg: number;

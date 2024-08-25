@@ -123,6 +123,18 @@ export function ChipLabel(props: TextProps) {
   );
 }
 
+export function TaskTitle(props: TextProps) {
+  return (
+    <ThemedText
+      style={[styles.chipLabel, props.style]}
+      lightColor={Colors.light.text}
+      darkColor={Colors.dark.text}
+    >
+      {props.children}
+    </ThemedText>
+  );
+}
+
 export function CourseCardTitle(props: TextProps) {
   return (
     <ThemedText
@@ -172,6 +184,10 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: "Heebo_400Regular",
+    fontSize: 16,
+  },
+  taskTitle: {
+    fontFamily: "Heebo_500Medium",
     fontSize: 16,
   },
   chipLabel: {
