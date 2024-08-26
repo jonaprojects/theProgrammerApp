@@ -16,6 +16,8 @@ import {
   Heebo_900Black,
 } from "@expo-google-fonts/heebo";
 
+import { JetBrainsMono_400Regular } from "@expo-google-fonts/jetbrains-mono";
+
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
@@ -49,6 +51,7 @@ export default function RootLayout() {
     Heebo_500Medium,
     Heebo_700Bold,
     Heebo_900Black,
+    JetBrainsMono_400Regular,
   });
 
   useEffect(() => {
