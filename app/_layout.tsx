@@ -15,6 +15,7 @@ import {
   Heebo_700Bold,
   Heebo_900Black,
 } from "@expo-google-fonts/heebo";
+import { Drawer } from "expo-router/drawer";
 
 import { JetBrainsMono_400Regular } from "@expo-google-fonts/jetbrains-mono";
 

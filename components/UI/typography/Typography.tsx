@@ -159,6 +159,10 @@ export function OptionText(props: TextProps) {
   );
 }
 
+export function TutorialH4(props: TextProps) {
+  return <H4 style={[styles.tutorialH4, props.style]}>{props.children}</H4>;
+}
+
 const styles = StyleSheet.create({
   h1: {
     fontFamily: "Inter_700Bold",
@@ -218,5 +222,8 @@ const styles = StyleSheet.create({
   exerciseOption: {
     fontFamily: "Heebo_400Regular",
     fontSize: 18,
+  },
+  tutorialH4: {
+    marginBottom: 8,
   },
 });

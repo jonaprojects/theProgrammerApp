@@ -12,17 +12,15 @@ type BodyProps = PropsWithChildren<{
 
 export default function Body(props: BodyProps) {
   return (
-    <GestureHandlerRootView>
-      <ThemedView
-        lightColor={Colors.light.background}
-        darkColor={Colors.dark.background}
-        style={[styles.container, props.style]}
-      >
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.innerContainer}>{props.children}</View>
-        </SafeAreaView>
-      </ThemedView>
-    </GestureHandlerRootView>
+    <ThemedView
+      lightColor={Colors.light.background}
+      darkColor={Colors.dark.background}
+      style={[styles.container, props.style]}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.innerContainer}>{props.children}</View>
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
