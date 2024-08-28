@@ -20,7 +20,7 @@ export default function ProgressLine(props: ProgressLineProps) {
       style={{
         width: "100%",
         height: 4,
-        borderRadius: 4
+        borderRadius: 4,
       }}
       lightColor={lightColor}
       darkColor={darkColor}

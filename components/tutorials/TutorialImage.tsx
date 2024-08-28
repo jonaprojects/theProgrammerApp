@@ -8,6 +8,7 @@ export default function TutorialImage(props: ImageProps) {
           width: "100%",
           aspectRatio: 1.5,
           resizeMode: "cover",
+          marginVertical: 8,
         },
         props.style,
       ]}

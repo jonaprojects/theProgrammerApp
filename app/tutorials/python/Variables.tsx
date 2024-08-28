@@ -26,7 +26,7 @@ print(x)`;
       onNextPage={function (): void {
         router.navigate("/tutorials/python/Operators");
       }}
-      nextPageTitle=""
+      nextPageTitle="אופרטורים"
     >
       <P style={{ marginBottom: 16 }}>
         משתנים מאפשרים לנו לשמור ערכים ולהשתמש בהם כמה פעמים במהלך התוכנית.

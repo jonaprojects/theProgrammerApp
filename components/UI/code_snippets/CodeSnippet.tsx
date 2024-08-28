@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 16,
   },
-  
+
   codeContainer: {
     padding: 16,
     minWidth: "100%",
