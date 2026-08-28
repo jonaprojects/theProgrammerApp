@@ -113,14 +113,14 @@ const pythonQuestions: Questions = [
     id: 14,
     question: "איך ניתן להגדיל את הערך של המשתנה a ב-1?",
     type: "multiple",
-    correctAnswer: "=+a",
-    incorrectAnswers: ["++a", "a+=1 או a++", "inc a"],
+    correctAnswer: "a += 1",
+    incorrectAnswers: ["++a", "a++", "inc a"],
   },
   {
     id: 15,
     question: "ניתן לשנות את הערכים ב-tuple.",
     type: "yesno",
-    correctAnswer: true,
+    correctAnswer: false,
   },
   {
     id: 16,

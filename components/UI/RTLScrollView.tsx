@@ -1,11 +1,13 @@
-import React, { forwardRef, useEffect, useRef } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { ScrollView, ScrollViewProps } from "react-native";
 
-const RTLScrollView = forwardRef(function RTLScrollView(
+const RTLScrollView = forwardRef<ScrollView, ScrollViewProps>(function RTLScrollView(
   props: ScrollViewProps,
   ref
 ) {
-  const scrollViewRef = useRef<ScrollView>();
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useImperativeHandle(ref, () => scrollViewRef.current as ScrollView, []);
 
   useEffect(() => {
     // Automatically scroll to the end (right) when the component mounts

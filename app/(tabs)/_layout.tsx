@@ -1,12 +1,8 @@
-import { Tabs, useNavigation, Stack } from "expo-router";
+import { Tabs } from "expo-router";
 import React from "react";
 
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import WeHaveTutorials from "../onboarding/tutorials";
-import OurYoutube from "../onboarding/our_youtube";
-import NewQuestions from "../onboarding/new_questions";
 
 export default function Layout() {
   // const colorScheme = useColorScheme();
@@ -18,13 +14,27 @@ export default function Layout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "dark"].tint,
         tabBarInactiveTintColor: "gray",
-        tabBarLabelStyle: { fontSize: 14 },
+        tabBarLabelPosition: "below-icon",
+        tabBarLabelStyle: {
+          fontFamily: "Heebo_500Medium",
+          fontSize: 12,
+          lineHeight: 16,
+          writingDirection: "rtl",
+        },
         tabBarStyle: {
           backgroundColor: Colors[colorScheme ?? "dark"].tabBackgroundColor,
           borderTopColor: "transparent",
+          height: 64,
+          paddingTop: 6,
+          paddingBottom: 6,
           elevation: 0,
         },
-        tabBarIconStyle: { fontSize: 20 },
+        tabBarItemStyle: {
+          paddingVertical: 2,
+        },
+        tabBarIconStyle: {
+          marginTop: 0,
+        },
         headerShown: false, // hide header if needed
       }}
     >

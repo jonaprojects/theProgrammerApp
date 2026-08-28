@@ -1,24 +1,24 @@
-import {
-  ImageBackground,
-  ScrollView,
-  StyleProp,
-  StyleSheet,
-  View,
-  ViewStyle,
-} from "react-native";
+import { ScrollView, StyleProp, StyleSheet, ViewStyle } from "react-native";
 import TutorialHeader from "./TutorialHeader";
 import Body from "@/components/UI/Body";
 import Navbar from "@/components/UI/Navbar";
 import { PropsWithChildren } from "react";
 import Container from "@/components/UI/Container";
 import NextPage from "@/components/tutorials/NextPage";
+import PrimaryButton from "@/components/UI/buttons/PrimaryButton";
+import { P } from "@/components/UI/typography/Typography";
 
 type TutorialTemplateProps = PropsWithChildren<{
   headerBackgroundImg: number;
   headerTitle: string;
-  onNextPage: () => void;
-  nextPageTitle: string;
+  onNextPage?: () => void;
+  nextPageTitle?: string;
+  onComplete?: () => void;
+  completionLabel?: string;
+  completionPending?: boolean;
+  progressError?: string | null;
   tableOfContentsPath: string;
+  coursesPath?: string;
   style?: StyleProp<ViewStyle>;
 }>;
 export default function TutorialTemplate(props: TutorialTemplateProps) {
@@ -26,21 +26,39 @@ export default function TutorialTemplate(props: TutorialTemplateProps) {
     <Body>
       <Navbar />
 
-      <ScrollView style={{ flex: 1, marginBottom: 32 }}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         <TutorialHeader
           backgroundImg={props.headerBackgroundImg}
           title={props.headerTitle}
           style={styles.header}
           tableOfContentsPath={props.tableOfContentsPath}
+          coursesPath={props.coursesPath ?? "/courses"}
         />
         <Container style={styles.pageContent}>
           {props.children}
 
-          <NextPage
-            style={{ marginTop: 16 }}
-            onNextPage={props.onNextPage}
-            nextPageTitle={props.nextPageTitle}
-          />
+          {props.progressError ? <P style={styles.progressError}>{props.progressError}</P> : null}
+
+          {props.onNextPage && props.nextPageTitle && (
+            <NextPage
+              style={{ marginTop: 16 }}
+              onNextPage={props.onNextPage}
+              nextPageTitle={props.nextPageTitle}
+            />
+          )}
+          {props.onComplete ? (
+            <PrimaryButton
+              fill
+              onPress={props.onComplete}
+              disabled={props.completionPending}
+              style={styles.completeButton}
+            >
+              {props.completionPending ? "שומר התקדמות..." : props.completionLabel ?? "סיום השיעור"}
+            </PrimaryButton>
+          ) : null}
         </Container>
       </ScrollView>
     </Body>
@@ -48,10 +66,28 @@ export default function TutorialTemplate(props: TutorialTemplateProps) {
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+    marginBottom: 32,
+  },
+  scrollContent: {
+    paddingBottom: 24,
+  },
   pageContent: {
     flex: 1,
     marginTop: -50,
-    paddingLeft: 16,
+    width: "100%",
+    maxWidth: 840,
+    alignSelf: "center",
+    paddingHorizontal: 20,
   },
   header: {},
+  progressError: {
+    marginTop: 16,
+    color: "#FB7185",
+    textAlign: "right",
+  },
+  completeButton: {
+    marginTop: 24,
+  },
 });

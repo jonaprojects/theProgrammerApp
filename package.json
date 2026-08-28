@@ -8,22 +8,36 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "backend:dev": "npm --prefix server run dev",
+    "backend:build": "npm --prefix server run build",
+    "backend:test": "npm --prefix server test",
+    "backend:migrate": "npm --prefix server run db:migrate",
     "test": "jest --watchAll",
+    "test:ci": "jest --runInBand --watch=false",
     "lint": "expo lint"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/server/"
+    ]
   },
   "dependencies": {
+    "@babel/runtime": "7.29.7",
     "@expo-google-fonts/heebo": "^0.2.3",
     "@expo-google-fonts/inter": "^0.2.3",
     "@expo-google-fonts/jetbrains-mono": "^0.2.3",
+    "@expo/metro-runtime": "~3.2.3",
     "@expo/vector-icons": "^14.0.2",
     "@react-native-async-storage/async-storage": "1.23.1",
+    "@react-native/assets-registry": "0.74.87",
     "@react-navigation/drawer": "^6.7.2",
     "@react-navigation/native": "^6.0.2",
     "expo": "~51.0.28",
+    "expo-asset": "10.0.10",
     "expo-constants": "~16.0.2",
+    "expo-file-system": "17.0.1",
     "expo-font": "~12.0.9",
     "expo-image": "~1.12.13",
     "expo-linear-gradient": "~13.0.2",
@@ -52,6 +66,7 @@
     "@types/react": "~18.2.45",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/react-test-renderer": "^18.0.7",
+    "babel-preset-expo": "11.0.15",
     "jest": "^29.2.1",
     "jest-expo": "~51.0.3",
     "react-test-renderer": "18.2.0",

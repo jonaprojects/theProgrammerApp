@@ -48,9 +48,9 @@ export default function CourseCard(props: CourseCardProps) {
 const styles = StyleSheet.create({
   card: {
     paddingVertical: 24,
-    paddingHorizontal: 8,
+    paddingHorizontal: 16,
     gap: 16,
-    borderRadius: 4,
+    borderRadius: 8,
   },
 
   cardHeader: {
@@ -61,7 +61,8 @@ const styles = StyleSheet.create({
   backgroundImage: {
     width: "100%",
     maxHeight: 500,
-    borderRadius: 4,
+    borderRadius: 8,
+    overflow: "hidden",
   },
 
   toolkit: {

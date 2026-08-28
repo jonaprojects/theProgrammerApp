@@ -1,92 +1,84 @@
+import { useCallback } from "react";
+import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
+import { type Href, router, useFocusEffect } from "expo-router";
+
 import MyCourse from "@/components/course_cards/MyCourse";
 import Body from "@/components/UI/Body";
-import Container from "@/components/UI/Container";
 import Navbar from "@/components/UI/Navbar";
-import { H1 } from "@/components/UI/typography/Typography";
-import { router } from "expo-router";
-import { FlatList, StyleSheet, View } from "react-native";
+import { H1, P } from "@/components/UI/typography/Typography";
+import { Colors } from "@/constants/Colors";
+import { pythonRoutesByLessonSlug } from "@/data/tutorials/python/lessonSlugs";
+import { getCourseImage } from "@/services/api/assets";
+import type { ApiEnrollmentProgress } from "@/services/api/types";
+import { useProgress } from "@/context/ProgressContext";
 
-// TODO: this data will be taken from different APIs in the future
-type Course = {
-  id: number;
-  name: string;
-  currentLesson: number;
-  numOfLessons: number;
-  backgroundImg: number;
-  info?: string;
-  navigateFn: () => void;
-};
+function openCourse(enrollment: ApiEnrollmentProgress) {
+  if (enrollment.courseSlug === "python-basics" && enrollment.resumeLesson) {
+    const route = pythonRoutesByLessonSlug[enrollment.resumeLesson.lessonSlug];
+    if (route) {
+      router.navigate(`/tutorials/python/${route}` as Href);
+      return;
+    }
+  }
+  router.navigate("/tutorials/python/CourseTableOfContents");
+}
 
-const MY_COURSES: Course[] = [
-  {
-    id: 0,
-    name: "קורס תכנות בפייתון",
-    currentLesson: 21,
-    numOfLessons: 36,
-    backgroundImg: require("@/assets/images/courses/pythonCourseCard.png"),
-    info: "",
-    navigateFn: function (): void {
-      router.navigate("/tutorials/python/Intro");
-    },
-  },
-  {
-    id: 1,
-    name: "קורס HTML",
-    currentLesson: 11,
-    numOfLessons: 24,
-    backgroundImg: require("@/assets/images/courses/htmlCourseCard.png"),
-    info: "",
-    navigateFn: function (): void {
-      throw new Error("Function not implemented.");
-    },
-  },
-  {
-    id: 2,
-    name: "קורס תכנות בפייתון",
-    currentLesson: 21,
-    numOfLessons: 36,
-    backgroundImg: require("@/assets/images/courses/pythonCourseCard.png"),
-    info: "",
-    navigateFn: function (): void {
-      throw new Error("Function not implemented.");
-    },
-  },
-];
 export default function MyCourses() {
+  const { progress, loading, error, refresh } = useProgress();
+  const enrollments = progress?.enrollments ?? [];
+
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
+
   return (
-    <Body style={styles.body}>
+    <Body>
       <Navbar />
-      <Container style={styles.container}>
-        <H1 style={{ marginTop: 48, marginBottom: 24 }}>הקורסים שלי</H1>
-        <View style={{ flex: 1 }}>
-          <FlatList
-            data={MY_COURSES}
-            scrollEnabled
-            horizontal={false} // Ensures vertical scrolling
-            showsVerticalScrollIndicator={false} // Shows the vertical scroll indicator
-            renderItem={({ item }) => {
-              return (
-                <MyCourse
-                  courseID={item.id}
-                  courseName={item.name}
-                  backgroundImg={item.backgroundImg}
-                  currentLesson={item.currentLesson}
-                  numOfLessons={item.numOfLessons}
-                  style={{ marginBottom: 8 }}
-                  navigateFn={item.navigateFn}
-                />
-              );
-            }}
-          />
+      {loading && !progress ? (
+        <View style={styles.centeredState}>
+          <ActivityIndicator size="large" color={Colors.dark.primary} />
         </View>
-      </Container>
+      ) : (
+        <FlatList
+          data={enrollments}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={<H1 style={styles.heading}>הקורסים שלי</H1>}
+          ListEmptyComponent={
+            <P style={styles.emptyText}>
+              {error ? "לא הצלחנו לטעון את ההתקדמות מהשרת." : "עדיין לא נרשמתם לקורס."}
+            </P>
+          }
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          renderItem={({ item }) => (
+            <MyCourse
+              courseID={item.courseId}
+              courseName={item.courseTitle}
+              backgroundImg={getCourseImage(item.courseSlug)}
+              completedLessons={item.completedLessons}
+              numOfLessons={item.totalLessons}
+              completionPercentage={item.completionPercentage}
+              status={item.status}
+              resumeLessonTitle={item.resumeLesson?.lessonTitle}
+              navigateFn={() => openCourse(item)}
+            />
+          )}
+          keyExtractor={({ courseId }) => courseId}
+        />
+      )}
     </Body>
   );
 }
 
 const styles = StyleSheet.create({
-  body: {
-    flex: 1,
+  listContent: {
+    width: "100%",
+    maxWidth: 840,
+    alignSelf: "center",
+    paddingHorizontal: 20,
+    paddingTop: 32,
+    paddingBottom: 32,
   },
-  container: { flex: 1 },
+  heading: { marginBottom: 24 },
+  separator: { height: 12 },
+  centeredState: { flex: 1, justifyContent: "center", alignItems: "center" },
+  emptyText: { textAlign: "center", marginTop: 32 },
 });

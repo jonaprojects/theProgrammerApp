@@ -1,13 +1,10 @@
 import React from "react";
 import type { PropsWithChildren } from "react";
 import {
-  PressableAndroidRippleConfig,
   StyleProp,
-  StyleSheet,
   ViewStyle,
 } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { ThemedPressable } from "@/components/ThemedPressable";
 
@@ -21,6 +18,7 @@ type PrimaryButtonProps = PropsWithChildren<{
   fill?: boolean;
   paddingHorizontal?: number;
   onPress?: () => void;
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 }>;
 
@@ -31,6 +29,9 @@ export default function PrimaryButton(props: PrimaryButtonProps) {
       darkColor={Colors.dark.primary}
       android_ripple={{}}
       onPress={props.onPress}
+      disabled={props.disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: props.disabled }}
       style={[
         {
           height: props.height ?? 64,
@@ -41,6 +42,7 @@ export default function PrimaryButton(props: PrimaryButtonProps) {
           borderRadius: 4,
         },
         props.style,
+        props.disabled && { opacity: 0.45 },
       ]}
     >
       <ThemedText

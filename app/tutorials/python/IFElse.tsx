@@ -1,4 +1,4 @@
-import { router, useNavigation } from "expo-router";
+import { Href, router, useNavigation } from "expo-router";
 import PythonTutorialTemplate from "./PythonTutorialTemplate";
 import { useEffect } from "react";
 import { P, TutorialH4 as H4 } from "@/components/UI/typography/Typography";
@@ -32,9 +32,9 @@ else:
 
   return (
     <PythonTutorialTemplate
-      title={"קלט ופלט"}
+      title={"התניות"}
       onNextPage={function (): void {
-        router.navigate("/tutorials/python/Intro");
+        router.navigate("/tutorials/python/Elif" as Href<string | object>);
       }}
       nextPageTitle=" elif התניות"
     >

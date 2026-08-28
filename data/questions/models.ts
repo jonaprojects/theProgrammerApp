@@ -3,6 +3,10 @@ export interface Question {
   question: string;
   type: "yesno" | "multiple";
   explanation?: string;
+  codeSnippet?: {
+    language: string;
+    code: string;
+  };
 }
 
 export interface MultipleChoiceQuestion extends Question {

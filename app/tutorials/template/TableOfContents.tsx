@@ -1,5 +1,4 @@
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Image } from "expo-image";
 import { Href, Link } from "expo-router";
 import Container from "@/components/UI/Container";
 import Body from "@/components/UI/Body";
@@ -11,6 +10,8 @@ import Navbar from "@/components/UI/Navbar";
 type TableOfContentsProps = {
   data: TableOfContentsModel;
   courseHeaderImg: number;
+  basePath: string;
+  lessonStatusByPath?: Record<string, "not_started" | "in_progress" | "completed">;
 };
 
 export default function TableOfContents(props: TableOfContentsProps) {
@@ -30,39 +31,34 @@ export default function TableOfContents(props: TableOfContentsProps) {
                       const contentsLength = Object.keys(
                         section.contents
                       ).length;
+                      const status = props.lessonStatusByPath?.[value] ?? "not_started";
                       return (
                         <View
-                          style={{ flexDirection: "row-reverse", gap: 5 }}
+                          style={styles.lessonRow}
                           key={`content${index}`}
                         >
-                          <View>
-                            {index < contentsLength - 1 && (
-                              <Image
-                                source={require("@/assets/images/icons/checkmarkCompleted.png")}
-                                style={{
-                                  width: 32,
-                                  height: 52,
-                                }}
-                              />
-                            )}
-                            {index === contentsLength - 1 && (
-                              <Image
-                                source={require("@/assets/images/icons/checkmarkCompleted1.png")}
-                                style={{
-                                  width: 32,
-                                  height: 32,
-                                }}
-                                key={index}
-                              />
-                            )}
+                          <View style={styles.markerColumn}>
+                            <View style={[
+                              styles.marker,
+                              status === "completed" && styles.completedMarker,
+                              status === "in_progress" && styles.currentMarker,
+                            ]}>
+                              {status === "completed" ? <P style={styles.checkmark}>✓</P> : null}
+                            </View>
+                            {index < contentsLength - 1 ? (
+                              <View style={[styles.line, status === "completed" && styles.completedLine]} />
+                            ) : null}
                           </View>
-                          <View style={{ marginTop: 5 }}>
+                          <View style={styles.lessonDetails}>
                             <Link
-                              href={value as Href<string | object>}
+                              href={`${props.basePath}/${value}` as Href<string | object>}
                               key={key}
                             >
                               <P>{key}</P>
                             </Link>
+                            {status === "in_progress" ? (
+                              <P style={styles.currentLabel}>השיעור הנוכחי</P>
+                            ) : null}
                           </View>
                         </View>
                       );
@@ -83,5 +79,57 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: -100,
     paddingLeft: 16,
+  },
+  lessonRow: {
+    flexDirection: "row-reverse",
+    gap: 10,
+    minHeight: 52,
+  },
+  markerColumn: {
+    width: 24,
+    alignItems: "center",
+  },
+  marker: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "#677384",
+    backgroundColor: "#222831",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  completedMarker: {
+    borderColor: "#00ADB5",
+    backgroundColor: "#00ADB5",
+  },
+  currentMarker: {
+    borderColor: "#52F5FD",
+    backgroundColor: "#29374B",
+  },
+  checkmark: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontFamily: "Heebo_700Bold",
+  },
+  line: {
+    width: 2,
+    flex: 1,
+    backgroundColor: "#45505F",
+  },
+  completedLine: {
+    backgroundColor: "#00ADB5",
+  },
+  lessonDetails: {
+    flex: 1,
+    minWidth: 0,
+    paddingTop: 1,
+    paddingBottom: 12,
+    alignItems: "flex-end",
+  },
+  currentLabel: {
+    marginTop: 2,
+    color: "#52F5FD",
+    fontSize: 13,
   },
 });

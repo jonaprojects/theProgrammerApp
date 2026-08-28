@@ -1,5 +1,5 @@
-import type { ImageStyle, StyleProp, ViewStyle } from "react-native";
-import { View, ImageBackground, StyleSheet, Pressable } from "react-native";
+import type { ImageStyle, StyleProp } from "react-native";
+import { View, ImageBackground, StyleSheet } from "react-native";
 import { PropsWithChildren } from "react";
 
 type TutorialHeaderProps = PropsWithChildren<{
@@ -27,6 +27,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   content: {
-    paddingHorizontal: 8,
+    width: "100%",
+    maxWidth: 840,
+    alignSelf: "center",
+    paddingHorizontal: 20,
   },
 });

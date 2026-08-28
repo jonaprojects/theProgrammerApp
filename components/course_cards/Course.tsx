@@ -8,7 +8,10 @@ type CourseProps = {
   courseBgImage: number;
   courseDescription: string;
   cousreInfo?: string;
-  courseID: number;
+  courseID: string;
+  enrolled?: boolean;
+  enrolling?: boolean;
+  onEnroll: () => void;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -21,7 +24,16 @@ export default function Course(props: CourseProps) {
     >
       <View style={styles.courseBody}>
         <P>{props.courseDescription}</P>
-        <SmallPrimaryButton>הירשם לקורס</SmallPrimaryButton>
+        <SmallPrimaryButton
+          disabled={props.enrolled || props.enrolling}
+          onPress={props.onEnroll}
+        >
+          {props.enrolled
+            ? "כבר נרשמתם"
+            : props.enrolling
+              ? "נרשמים..."
+              : "הירשם לקורס"}
+        </SmallPrimaryButton>
       </View>
     </CourseCard>
   );

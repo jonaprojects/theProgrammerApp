@@ -11,28 +11,30 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const STROKE_COLOR = "#00ADB5";
 const BACKGROUND_COLOR = "#151A21";
-const CIRCLE_LENGTH = 450; // 2 * PI * R
-const R = CIRCLE_LENGTH / (2 * Math.PI);
-
 function decimalToPercentage(decimal: number) {
   return (decimal * 100).toFixed(0);
 }
 
 type CircularProgressBarProps = {
   completionRatio: number;
+  size?: number;
 };
 
 export default function CircularProgressBar({
   completionRatio,
+  size = 180,
 }: CircularProgressBarProps) {
   const percent = decimalToPercentage(completionRatio);
+  const strokeWidth = Math.max(12, Math.round(size * 0.075));
+  const radius = (size - strokeWidth) / 2;
+  const circleLength = 2 * Math.PI * radius;
 
   // Shared value for animation
   const animatedProgress = useSharedValue(0);
 
   // Animated props for the circle
   const animatedProps = useAnimatedProps(() => ({
-    strokeDashoffset: CIRCLE_LENGTH * (1 - animatedProgress.value),
+    strokeDashoffset: circleLength * (1 - animatedProgress.value),
   }));
 
   // Trigger animation when the component mounts
@@ -41,27 +43,27 @@ export default function CircularProgressBar({
   }, [completionRatio]);
 
   return (
-    <View style={styles.progressBarContainer}>
-      <Svg width={200} height={200} style={styles.svg}>
+    <View style={[styles.progressBarContainer, { width: size, height: size }]}>
+      <Svg width={size} height={size} style={styles.svg}>
         <Circle
-          cx="100"
-          cy="100"
-          r={R}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
           stroke={BACKGROUND_COLOR}
-          strokeWidth={15}
-          strokeDasharray={CIRCLE_LENGTH}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circleLength}
           fill="transparent"
         />
         <AnimatedCircle
-          cx="100"
-          cy="100"
-          r={R}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
           stroke={STROKE_COLOR}
-          strokeWidth={15}
-          strokeDasharray={CIRCLE_LENGTH}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circleLength}
           strokeLinecap="round"
           fill="transparent"
-          transform={`rotate(-90, 100, 100)`} // Rotate the circle to start from the top
+          transform={`rotate(-90, ${size / 2}, ${size / 2})`}
           animatedProps={animatedProps}
         />
       </Svg>
@@ -77,8 +79,9 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start", // Make sure the container only takes the space it needs
   },
   progressText: {
-    fontSize: 40,
-    color: "rgba(256,256,256,0.7)",
+    fontFamily: "Heebo_400Regular",
+    fontSize: 36,
+    color: "rgba(255,255,255,0.7)",
     position: "absolute",
   },
   svg: {

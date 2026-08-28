@@ -6,6 +6,7 @@ export default function CustomTextInput(props: TextInputProps) {
 
   return (
     <TextInput
+      {...props}
       style={[
         {
           borderWidth: 1,
@@ -17,7 +18,6 @@ export default function CustomTextInput(props: TextInputProps) {
         },
         props.style,
       ]}
-      {...props}
     />
   );
 }

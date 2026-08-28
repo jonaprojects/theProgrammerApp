@@ -1,0 +1,31 @@
+{
+  "name": "the-programmer-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.json && node --test dist/app.test.js dist/auth/password.test.js dist/config/env.test.js dist/content-import/content-import.test.js dist/modules/attempts/service.test.js dist/modules/progress/repository.test.js dist/modules/questions/repository.test.js",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "content:validate": "tsx src/content-import/cli.ts --dry-run",
+    "content:import": "tsx src/content-import/cli.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "fastify": "^5.6.2",
+    "pg": "^8.16.3",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "@types/pg": "^8.15.5",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

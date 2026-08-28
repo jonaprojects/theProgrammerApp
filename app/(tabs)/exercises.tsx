@@ -1,38 +1,29 @@
-import { Image, StyleSheet, Platform, View, Text } from "react-native";
-import { useRootNavigationState, Redirect, router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Redirect, router, useRootNavigationState } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
 
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { useEffect, useState } from "react";
 import Body from "@/components/UI/Body";
-import { Colors } from "@/constants/Colors";
-import { H1, H2 } from "@/components/UI/typography/Typography";
-import TopicProgress from "@/components/UI/topic_progress/TopicProgress";
-import { ScrollView } from "react-native";
 import Navbar from "@/components/UI/Navbar";
+import TopicProgress from "@/components/UI/topic_progress/TopicProgress";
+import { H2, P } from "@/components/UI/typography/Typography";
+import { Colors } from "@/constants/Colors";
+import { useProgress } from "@/context/ProgressContext";
 
 export default function ExerciseScreen() {
-  const [completedOnboarding, setCompletedOnboarding] = useState<string | null>(
-    null
-  );
-
-  useEffect(() => {
-    async function checkCompletedOnboarding() {
-      try {
-        const value = await AsyncStorage.getItem("Completed_Onboarding");
-        setCompletedOnboarding(value);
-      } catch (e) {
-        // error reading value
-      }
-    }
-
-    checkCompletedOnboarding();
-  }, []);
+  const [completedOnboarding, setCompletedOnboarding] = useState<string | null>(null);
+  const { progress: userProgress, loading, error, refresh } = useProgress();
+  const topics = userProgress?.topics ?? [];
   const rootNavigationState = useRootNavigationState();
 
-  if (!rootNavigationState?.key) return null;
+  useEffect(() => {
+    AsyncStorage.getItem("Completed_Onboarding").then(setCompletedOnboarding);
+  }, []);
 
+  useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
+
+  if (!rootNavigationState?.key) return null;
   if (completedOnboarding === "false") {
     return <Redirect href="/onboarding/new_questions" />;
   }
@@ -40,65 +31,57 @@ export default function ExerciseScreen() {
   return (
     <Body>
       <Navbar />
-      <ScrollView style={{ flex: 1 }}>
-        <H2 style={{ textAlign: "center", marginVertical: 32 }}>
-          תרגלת כבר היום?
-        </H2>
-        <TopicProgress
-          topic="תכנות מונחה עצמים"
-          totalNumOfQuestions={25}
-          questionsAnswered={10}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/exercise?topic=oop");
-          }}
+      {loading && !userProgress ? (
+        <View style={styles.centeredState}>
+          <ActivityIndicator size="large" color={Colors.dark.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={topics}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <View style={styles.header}>
+              <H2 style={styles.heading}>תרגלת כבר היום?</H2>
+              {error ? (
+                <P style={styles.errorText}>לא הצלחנו לטעון את הנושאים מהשרת.</P>
+              ) : null}
+            </View>
+          }
+          ListEmptyComponent={
+            <P style={styles.emptyText}>אין כרגע נושאי תרגול זמינים.</P>
+          }
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          renderItem={({ item }) => (
+            <TopicProgress
+              topic={item.topicTitle}
+              totalNumOfQuestions={item.questionCount}
+              questionsAnswered={item.answeredCount}
+              accuracyPercentage={item.accuracyPercentage}
+              masteryPercentage={item.masteryPercentage}
+              onPress={() => router.navigate(`/exercise?topic=${item.topicSlug}`)}
+            />
+          )}
+          keyExtractor={({ topicId }) => topicId}
         />
-        <TopicProgress
-          topic="פיתוח אתרים"
-          totalNumOfQuestions={37}
-          questionsAnswered={12}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/exercise?topic=webdev");
-          }}
-        />
-        <TopicProgress
-          topic="פייתון"
-          totalNumOfQuestions={41}
-          questionsAnswered={6}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/exercise?topic=python");
-          }}
-        />
-        <TopicProgress
-          topic="תקשורת ורשתות"
-          totalNumOfQuestions={15}
-          questionsAnswered={9}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/exercise?topic=networks");
-          }}
-        />
-        <TopicProgress
-          topic="שפת C"
-          totalNumOfQuestions={41}
-          questionsAnswered={4}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/exercise?topic=clang");
-          }}
-        />
-        <TopicProgress
-          topic="שפת אסמבלי"
-          totalNumOfQuestions={26}
-          questionsAnswered={1}
-          style={{ marginBottom: 8 }}
-          onPress={() => {
-            router.navigate("/exercise?topic=assembly");
-          }}
-        />
-      </ScrollView>
+      )}
     </Body>
   );
 }
+
+const styles = StyleSheet.create({
+  listContent: {
+    width: "100%",
+    maxWidth: 840,
+    alignSelf: "center",
+    paddingHorizontal: 20,
+    paddingTop: 28,
+    paddingBottom: 32,
+  },
+  header: { gap: 12, marginBottom: 20 },
+  heading: { textAlign: "center" },
+  separator: { height: 12 },
+  centeredState: { flex: 1, justifyContent: "center", alignItems: "center" },
+  errorText: { color: "#FB7185", textAlign: "center" },
+  emptyText: { textAlign: "center", marginTop: 32 },
+});

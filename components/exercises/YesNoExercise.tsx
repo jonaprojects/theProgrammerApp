@@ -1,48 +1,49 @@
-import { StyleSheet, Image, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
-import { H4 } from "@/components/UI/typography/Typography";
-import PrimaryButton from "@/components/UI/buttons/PrimaryButton";
-import SecondaryButton from "@/components/UI/buttons/SecondaryButton";
 import { View } from "react-native";
 import YesNoButton from "@/components/UI/buttons/YesNoButton";
 
-import { I18nManager } from "react-native";
 import QuestionHeader from "./QuestionHeader";
-
-I18nManager.forceRTL(false); // Forces LTR layout
+import type { ApiQuestionOption } from "@/services/api/types";
 
 type YesNoExerciseProps = {
   question: string;
-  correctAnswer: boolean;
-  questionID: number;
-  userAnswered: boolean;
+  options: ApiQuestionOption[];
+  selectedOptionId: string | null;
+  correctOptionId: string | null;
+  revealed: boolean;
+  disabled: boolean;
+  onSelect: (optionId: string) => void;
+  progressLabel: string;
+  codeSnippet?: { language: string; code: string };
 };
 export default function YesNoExercise(props: YesNoExerciseProps) {
   return (
     <>
-      <View style={styles.questionHeaderContainer}>
-        <QuestionHeader question={props.question}></QuestionHeader>
-      </View>
+      <QuestionHeader
+        question={props.question}
+        codeSnippet={props.codeSnippet}
+        progressLabel={props.progressLabel}
+      />
       <ThemedView
         darkColor={Colors.dark.cardBackgroundColor}
         lightColor={Colors.light.cardBackgroundColor}
         style={styles.exerciseContainer}
       >
         <View style={styles.optionsContainer}>
-          <YesNoButton
-            type="yes"
-            userAnswered={props.userAnswered}
-            questionId={props.questionID}
-            correctAnswer={props.correctAnswer}
-          />
-          <YesNoButton
-            type="no"
-            userAnswered={props.userAnswered}
-            questionId={props.questionID}
-            correctAnswer={props.correctAnswer}
-          />
+          {props.options.map((option) => (
+            <YesNoButton
+              key={option.id}
+              label={option.label}
+              selected={props.selectedOptionId === option.id}
+              revealed={props.revealed}
+              disabled={props.disabled}
+              correct={props.correctOptionId === option.id}
+              onClick={() => props.onSelect(option.id)}
+            />
+          ))}
         </View>
       </ThemedView>
     </>
@@ -54,17 +55,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 16,
     marginBottom: 16,
-    height: 150,
+    minHeight: 150,
+    width: "100%",
+    maxWidth: 840,
+    alignSelf: "center",
   },
-  title: {},
-
   exerciseContainer: {
-    gap: 48,
-    paddingHorizontal: 16,
-    paddingVertical: 64,
-  },
-  questionHeaderContainer: {
-    maxHeight: 300,
-    minHeight: 200,
+    paddingHorizontal: 20,
+    paddingTop: 28,
+    paddingBottom: 0,
   },
 });
