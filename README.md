@@ -31,6 +31,11 @@ randomized question order, current question, skips, selections, and revealed
 feedback. Answer submissions are persisted by the API with idempotency keys, so
 a connection retry cannot award points or increment progress twice.
 
+Interactive exercises embedded in tutorial lessons are server-backed. Their
+attempts, hints, reveals, completion, lesson status, and one-time rewards follow
+the signed-in user across devices. Native session tokens are stored in encrypted
+Expo SecureStore; the web build uses browser storage.
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Run the full development environment
@@ -83,6 +88,10 @@ In the output, you'll find options to open the app in a
 The TypeScript files under `data/` remain the authoring source for questions and
 tutorials. Runtime catalog, exercise, enrollment, scoring, and progress screens read
 from PostgreSQL through the API.
+
+Tutorial authors should follow [`docs/tutorial-writing-guide.md`](./docs/tutorial-writing-guide.md),
+which defines the shared Hebrew voice, lesson structure, code-example rules,
+exercise standard, terminology, accuracy checks, and mobile review checklist.
 
 ## Get a fresh project
 

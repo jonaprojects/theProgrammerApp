@@ -22,9 +22,31 @@ describe("legacy content importer", () => {
       "Every category must contain at least 50 valid questions",
     );
     assert.equal(bundle.lessons.length, 23);
+    assert.equal(
+      bundle.lessons.reduce((total, lesson) => total + lesson.exercises.length, 0),
+      23,
+    );
+    assert.ok(bundle.lessons.every((lesson) => lesson.exercises.length === 1));
+    assert.equal(
+      new Set(bundle.lessons.flatMap((lesson) => lesson.exercises.map(({ id }) => id))).size,
+      23,
+    );
     assert.equal(bundle.rejections.length, 0);
     assert.equal(bundle.normalizations.length, 2);
     assert.ok(bundle.lessons.every((lesson) => lesson.content.length > 0));
+    assert.ok(
+      bundle.lessons.every(
+        (lesson) => lesson.content.filter(({ type }) => type === "paragraph").length >= 3,
+      ),
+      "Every lesson should contain at least three explanatory paragraphs",
+    );
+    assert.ok(
+      bundle.lessons.every((lesson) => {
+        const codeExamples = lesson.content.filter(({ type }) => type === "code").length;
+        return lesson.slug === "introduction" ? codeExamples >= 1 : codeExamples >= 2;
+      }),
+      "Every non-introduction lesson should contain at least two worked code examples",
+    );
     assert.equal(bundle.skippedEmptyLessons.length, 0);
     assert.equal(bundle.lessons.at(-1)?.slug, "external-libraries");
     const codeQuestions = bundle.topics.flatMap(({ questions }) => questions).filter(

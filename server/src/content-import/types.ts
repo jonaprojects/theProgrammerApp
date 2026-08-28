@@ -10,6 +10,16 @@ export interface ImportedLesson {
   title: string;
   position: number;
   content: LessonContentBlock[];
+  exercises: ImportedTutorialExercise[];
+}
+
+export interface ImportedTutorialExercise {
+  id: string;
+  type: "predict_output" | "fill_blank" | "find_bug" | "order_code" | "trace";
+  prompt: string;
+  explanation: string;
+  hint: string | null;
+  answerKey: string | number | string[];
 }
 
 export interface ImportedOption {

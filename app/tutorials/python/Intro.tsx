@@ -1,7 +1,10 @@
 import { router, useNavigation } from "expo-router";
 import PythonTutorialTemplate from "./PythonTutorialTemplate";
 import { useEffect } from "react";
-import { P } from "@/components/UI/typography/Typography";
+import { P, TutorialH4 as H4 } from "@/components/UI/typography/Typography";
+import CodeSnippet from "@/components/UI/code_snippets/CodeSnippet";
+import Section from "@/components/tutorials/Section";
+import InteractiveExercise from "@/components/tutorials/exercises/InteractiveExercise";
 
 export default function Intro() {
   const navigation = useNavigation();
@@ -19,21 +22,53 @@ export default function Intro() {
       nextPageTitle="פייתון- התקנה"
     >
       <P style={{ marginBottom: 16 }}>
-        פייתון פותחה בשנות ה-90 על ידי גואידו ואן רוסום ומאז עברה עוד ועוד
-        שדרוגים והפכה בהדרגה לאהובה יותר ויותר. בשנים האחרונות, היא חוותה עלייה
-        מאסיבית בפופולריות וצברה קהל של מיליוני מפתחים ברחבי העולם.
+        פייתון היא שפת תכנות כללית שנוצרה בתחילת שנות ה־90. היא תוכננה כך שקוד
+        יהיה קריא וברור, ולכן אפשר להתמקד ברעיון שרוצים לפתור ולא בהרבה סימנים
+        טכניים.
       </P>
-      
-      <P style={{ marginBottom: 16 }}>
-        פייתון נחשבת לשפה מאוד פשוטה להבנה ואינטואיטיבית. בנוסף היא מגיעה גם עם
-        סט רחב של ספריות קוד מובנות וחיצוניות וכלים שהופכים את הפיתוח בה לתהליך
-        מהיר ותמציתי יותר.
-      </P>
-      <P style={{ marginBottom: 16 }}>
-        בשל סיבות אלו, פייתון הפכה לשפה מבוקשת ביותר בתעשיית ההייטק והטכנולוגיה,
-        כאשר אפילו חברות טק גדולות כגון Google ו-Microsoft קיבלו את השפה בזרועות
-        פתוחות והחלו לשלב אותה בפיתוח המוצרים שלהן.
-      </P>
+
+      <Section>
+        <H4>למה להתחיל דווקא בפייתון?</H4>
+        <P style={{ marginBottom: 12 }}>
+          התחביר שלה קרוב יחסית לשפה רגילה. לדוגמה, השורה הבאה מבקשת מפייתון
+          להציג הודעה על המסך:
+        </P>
+        <CodeSnippet language="python" code={`print("Hello, Python!")`} />
+        <P>
+          עדיין לא צריך לזכור איך print עובדת. הרעיון החשוב הוא שאפשר להבין
+          בקירוב מה הקוד עושה כבר בקריאה הראשונה.
+        </P>
+      </Section>
+
+      <Section>
+        <H4>מה אפשר לבנות איתה?</H4>
+        <P style={{ marginBottom: 12 }}>
+          משתמשים בפייתון לאוטומציה, ניתוח נתונים, בינה מלאכותית, שרתי Web,
+          בדיקות תוכנה וכלים קטנים שחוסכים עבודה ידנית. אותה שפה מתאימה גם
+          לתוכנית ראשונה של כמה שורות וגם למערכות גדולות.
+        </P>
+        <P>
+          במהלך הקורס נתחיל מהבסיס, נריץ דוגמאות קצרות, ואז נחבר את הרעיונות
+          בהדרגה. אין צורך בניסיון קודם.
+        </P>
+      </Section>
+
+      <InteractiveExercise
+        exercise={{
+          id: "python-intro-predict-output-1",
+          type: "predict_output",
+          prompt: "איזו הודעה תופיע על המסך?",
+          code: `print("Hello, Python!")`,
+          options: [
+            { id: "hello", label: "Hello, Python!" },
+            { id: "print", label: "print" },
+            { id: "nothing", label: "לא יודפס דבר" },
+          ],
+          correctOptionId: "hello",
+          hint: "הטקסט שנמצא בתוך הסוגריים הוא ההודעה ש־print מציגה.",
+          explanation: "print מציגה את הטקסט שנמסר לה, ללא סימני המרכאות.",
+        }}
+      />
     </PythonTutorialTemplate>
   );
 }

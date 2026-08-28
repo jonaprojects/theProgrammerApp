@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import type {
   ApiAttemptResult,
@@ -9,6 +10,7 @@ import type {
   ApiProgress,
   ApiQuestion,
   ApiTopic,
+  ApiTutorialExerciseSubmission,
   ApiUserProfile,
 } from "./types";
 
@@ -20,6 +22,7 @@ export const API_BASE_URL =
     : "http://localhost:3000/api/v1");
 
 const SESSION_TOKEN_KEY = `the-programmer:session:${API_BASE_URL}`;
+const SECURE_SESSION_TOKEN_KEY = SESSION_TOKEN_KEY.replace(/[^A-Za-z0-9._-]/g, "_");
 const unauthorizedListeners = new Set<() => void>();
 
 export class ApiRequestError extends Error {
@@ -58,12 +61,27 @@ async function request<T>(
 }
 
 export async function getSessionToken(): Promise<string | null> {
-  return AsyncStorage.getItem(SESSION_TOKEN_KEY);
+  if (Platform.OS === "web") return AsyncStorage.getItem(SESSION_TOKEN_KEY);
+  const secureToken = await SecureStore.getItemAsync(SECURE_SESSION_TOKEN_KEY);
+  if (secureToken) return secureToken;
+
+  // Preserve sessions created before native encrypted storage was introduced.
+  const legacyToken = await AsyncStorage.getItem(SESSION_TOKEN_KEY);
+  if (legacyToken) {
+    await SecureStore.setItemAsync(SECURE_SESSION_TOKEN_KEY, legacyToken);
+    await AsyncStorage.removeItem(SESSION_TOKEN_KEY);
+  }
+  return legacyToken;
 }
 
 export async function setSessionToken(token: string | null): Promise<void> {
-  if (token) await AsyncStorage.setItem(SESSION_TOKEN_KEY, token);
-  else await AsyncStorage.removeItem(SESSION_TOKEN_KEY);
+  if (Platform.OS === "web") {
+    if (token) await AsyncStorage.setItem(SESSION_TOKEN_KEY, token);
+    else await AsyncStorage.removeItem(SESSION_TOKEN_KEY);
+    return;
+  }
+  if (token) await SecureStore.setItemAsync(SECURE_SESSION_TOKEN_KEY, token);
+  else await SecureStore.deleteItemAsync(SECURE_SESSION_TOKEN_KEY);
 }
 
 export function onSessionUnauthorized(listener: () => void): () => void {
@@ -145,6 +163,19 @@ export const api = {
         body: JSON.stringify({ status }),
       },
     ),
+  submitTutorialExercise: (input: {
+    exerciseId: string;
+    action: "check" | "reveal";
+    answer?: string | number | string[];
+    hintUsed: boolean;
+    idempotencyKey: string;
+  }) => {
+    const { exerciseId, ...body } = input;
+    return authenticatedRequest<ApiTutorialExerciseSubmission>(
+      `/me/tutorial-exercises/${encodeURIComponent(exerciseId)}/submissions`,
+      { method: "POST", body: JSON.stringify(body) },
+    );
+  },
 };
 
 export function createIdempotencyKey(): string {

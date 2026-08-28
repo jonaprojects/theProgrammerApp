@@ -6,13 +6,14 @@ import CodeSnippet from "@/components/UI/code_snippets/CodeSnippet";
 import { Image } from "expo-image";
 import TutorialImage from "@/components/tutorials/TutorialImage";
 import Section from "@/components/tutorials/Section";
+import InteractiveExercise from "@/components/tutorials/exercises/InteractiveExercise";
 
 export default function Operators() {
   const navigation = useNavigation();
 
-  const inputCodeSnippet = `name = input("Enter your name: ֿ")`;
-  const sayHelloCodeSnippet = `name = input("Enter your name: ֿ")
-print("hello, ",  name)`;
+  const inputCodeSnippet = `name = input("Enter your name: ")`;
+  const sayHelloCodeSnippet = `name = input("Enter your name: ")
+print(f"Hello, {name}!")`;
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
@@ -40,9 +41,8 @@ print("hello, ",  name)`;
         }}
       />
       <P style={{ marginBottom: 16 }}>
-        למעשה, אפשר למצוא דוגמאות רבות לקלט ופלט גם בחיי היומיום שלנו. למשל,
-        מכונת כביסה מקבלת כקלט בגדים מלוכלכים ומוציאה כפלט בגדים נקיים, מחשבון
-        מקבל תרגיל חשבוני ומחזיר תוצאה, וכו’...
+        אפשר למצוא קלט ופלט גם בחיי היומיום. מחשבון מקבל תרגיל כקלט ומציג תוצאה
+        כפלט; אפליקציית ניווט מקבלת יעד ומציגה מסלול.
       </P>
       <TutorialImage
         source={require("@/assets/images/tutorials/comics/inputOutput.jpg")}
@@ -50,12 +50,8 @@ print("hello, ",  name)`;
       <Section style={{ marginTop: 32 }}>
         <H4>קלט ופלט בפייתון</H4>
         <P style={{ marginBottom: 16 }}>
-          כדי לקלוט טקסט מהמשתמש בפייתון נוכל להשתמש בפעולה המובנית input. פעולה
-          זו מקבלת כפרמטר טקסט שמטרתו לבקש מהמשתמש להזין את הקלט. היא מחזירה את
-          הטקסט שהמשתמש הקליד - שאותו ניתן לשמור במשתנה.
-        </P>
-        <P style={{ marginBottom: 16 }}>
-          כדי לקלוט טקסט מהמשתמש בפייתון נוכל להשתמש בפעולה המובנית input.
+          הפעולה input מציגה בקשה, ממתינה שהמשתמש יקליד וילחץ Enter, ומחזירה את
+          הטקסט שהוקלד. בדרך כלל נשמור אותו במשתנה כדי להשתמש בו בהמשך.
         </P>
         <CodeSnippet language="python" code={inputCodeSnippet} />
 
@@ -64,11 +60,47 @@ print("hello, ",  name)`;
           במשתנה בשם name.
         </P>
         <P style={{ marginBottom: 16 }}>
-          למשל, התוכנית הזו קולטת מהמשתמש את השלום שלו, ואומרת לו שלום. למשל,
-          עבור הקלט "Tom" יודפס "Hello, Tom"
+          התוכנית הבאה קולטת שם ומשלבת אותו בתוך הודעה. האות f לפני המחרוזת
+          מאפשרת להציב בתוכה את הערך של name בעזרת סוגריים מסולסלים.
         </P>
         <CodeSnippet language="python" code={sayHelloCodeSnippet} />
       </Section>
+
+      <Section>
+        <H4>input תמיד מחזירה טקסט</H4>
+        <P style={{ marginBottom: 12 }}>
+          גם כשהמשתמש מקליד ספרות, התוצאה של input היא מחרוזת. כדי לבצע חישוב
+          ממירים אותה ל־int או ל־float.
+        </P>
+        <CodeSnippet
+          language="python"
+          code={`age_text = input("Enter your age: ")
+age = int(age_text)
+print(age + 1)`}
+        />
+        <P>
+          אם המשתמש יקליד 20, התוכנית תציג 21. בלי int, החיבור למספר היה גורם
+          לשגיאה מפני שאי אפשר לחבר ישירות מחרוזת ומספר.
+        </P>
+      </Section>
+
+      <InteractiveExercise
+        exercise={{
+          id: "python-input-output-fill-blank-1",
+          type: "fill_blank",
+          prompt: "איזו פעולה חסרה כדי לחשב את הגיל בשנה הבאה?",
+          code: `age = ___(input("Age: "))
+print(age + 1)`,
+          options: [
+            { id: "int", label: "int" },
+            { id: "str", label: "str" },
+            { id: "print", label: "print" },
+          ],
+          correctOptionId: "int",
+          hint: "input מחזירה טקסט, אבל החיבור מתבצע עם מספר.",
+          explanation: "int ממירה את הטקסט שהוקלד למספר שלם שאפשר לחבר אליו 1.",
+        }}
+      />
     </PythonTutorialTemplate>
   );
 }

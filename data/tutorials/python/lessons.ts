@@ -24,6 +24,25 @@ else:
       {
         title: "הסדר חשוב",
         paragraphs: ["התנאים נבדקים מלמעלה למטה. לכן מתחילים במקרה המצומצם או הגבוה ביותר; אילו בדקנו grade >= 55 ראשון, גם ציון 95 היה נעצר שם."],
+        exercise: {
+          id: "python-elif-predict-output-1",
+          type: "predict_output",
+          prompt: "איזו הודעה תודפס?",
+          code: `score = 85
+
+if score >= 60:
+    print("Passed")
+elif score >= 80:
+    print("Great")`,
+          options: [
+            { id: "passed", label: "Passed" },
+            { id: "great", label: "Great" },
+            { id: "both", label: "Passed\nGreat" },
+          ],
+          correctOptionId: "passed",
+          hint: "Python עוצרת בענף הראשון שהתנאי שלו מתקיים.",
+          explanation: "85 עומד כבר בתנאי score >= 60, ולכן הענף הראשון רץ ו־elif כלל לא נבדק.",
+        },
       },
       {
         title: "תנאים משולבים",
@@ -57,7 +76,26 @@ while counter > 0:
     print(counter)
     counter -= 1
 
-print("Go!")` },
+print("Go!")`, exercise: {
+        id: "python-loops-predict-output-1",
+        type: "predict_output",
+        prompt: "מה יודפס כאשר הקוד ירוץ?",
+        code: `counter = 3
+
+while counter > 0:
+    print(counter)
+    counter -= 1
+
+print("Go!")`,
+        options: [
+          { id: "a", label: "3\n2\n1\nGo!" },
+          { id: "b", label: "3\n2\n1\n0\nGo!" },
+          { id: "c", label: "1\n2\n3\nGo!" },
+        ],
+        correctOptionId: "a",
+        hint: "בדקו את הערך של counter לפני ההפחתה בכל סיבוב.",
+        explanation: "ההדפסה מתבצעת לפני ההפחתה. כאשר counter מגיע ל־0 התנאי כבר אינו מתקיים, ואז מודפס Go!.",
+      } },
       { title: "דוגמה שימושית", paragraphs: ["נקלוט מחירים עד שהמשתמש יזין ‎-1. ערך מיוחד שמסיים את הקלט נקרא sentinel."], code: `total_price = 0
 current_price = float(input("Enter a price (-1 to finish): "))
 
@@ -88,7 +126,23 @@ greet(name="Noam", greeting="Welcome")` },
     return width * height
 
 area = rectangle_area(5, 3)
-print(area)  # 15` },
+print(area)  # 15`, exercise: {
+        id: "python-functions-fill-blank-1",
+        type: "fill_blank",
+        prompt: "איזו מילה חסרה כדי להחזיר את התוצאה?",
+        code: `def double(number):
+    ___ number * 2
+
+result = double(4)`,
+        options: [
+          { id: "return", label: "return" },
+          { id: "print", label: "print" },
+          { id: "break", label: "break" },
+        ],
+        correctOptionId: "return",
+        hint: "המטרה היא להעביר ערך בחזרה למקום שקרא לפונקציה.",
+        explanation: "return מחזירה את הערך מהפונקציה, ולכן result יקבל את הערך 8.",
+      } },
     ],
     next: { title: "רשימות", path: "/tutorials/python/Lists" },
   },
@@ -106,7 +160,19 @@ numbers.append(3)
 print(numbers)  # [2, 6, 9, 3]
 
 numbers.extend([4, 5])
-print(numbers)  # [2, 6, 9, 3, 4, 5]` },
+print(numbers)  # [2, 6, 9, 3, 4, 5]`, exercise: {
+        id: "python-lists-order-code-1",
+        type: "order_code",
+        prompt: "סדרו את השורות כך שייווצר ותודפס הרשימה [1, 2, 3].",
+        blocks: [
+          { id: "print", code: "print(numbers)" },
+          { id: "append", code: "numbers.append(3)" },
+          { id: "create", code: "numbers = [1, 2]" },
+        ],
+        correctOrder: ["create", "append", "print"],
+        hint: "קודם יוצרים רשימה, אחר כך משנים אותה, ולבסוף מדפיסים.",
+        explanation: "צריך ליצור את הרשימה לפני הקריאה ל־append, ולהדפיס רק אחרי שהערך 3 נוסף.",
+      } },
       { title: "הסרת איברים", paragraphs: ["remove מסירה לפי ערך, pop מסירה ומחזירה לפי אינדקס, del מוחקת מיקום ו-clear מרוקנת את הרשימה."], code: `animals = ["monkey", "lion", "dog", "cat"]
 animals.remove("lion")
 last_animal = animals.pop()
@@ -127,7 +193,7 @@ descending = sorted(numbers, reverse=True)` },
     title: "מחרוזות (strings)",
     intro: ["מחרוזת היא רצף תווים. כותבים אותה בין מרכאות, ניגשים לתווים בעזרת אינדקסים ויכולים לעבור עליה בלולאה."],
     sections: [
-      { title: "אינדקסים ואורך", code: `greeting = "hello"
+      { title: "אינדקסים ואורך", paragraphs: ["לכל תו יש אינדקס שמתחיל ב־0. אינדקס שלילי סופר מהסוף, ו־len מחזירה את מספר התווים במחרוזת."], code: `greeting = "hello"
 
 print(greeting[0])   # h
 print(greeting[-1])  # o
@@ -148,7 +214,22 @@ print(sentence.find("is"))` },
 
 print(language[0:3])  # Pyt
 print(language[2:])   # thon
-print(language[::-1]) # nohtyP` },
+print(language[::-1]) # nohtyP`, exercise: {
+        id: "python-strings-trace-1",
+        type: "trace",
+        prompt: "מה יהיה הערך שיודפס?",
+        code: `word = "python"
+part = word[1:4]
+print(part)`,
+        options: [
+          { id: "yth", label: "yth" },
+          { id: "pyt", label: "pyt" },
+          { id: "tho", label: "tho" },
+        ],
+        correctOptionId: "yth",
+        hint: "האינדקס הראשון נכלל, ואינדקס הסיום אינו נכלל.",
+        explanation: "החיתוך מתחיל באינדקס 1 (y) ועוצר לפני אינדקס 4, ולכן מתקבלת המחרוזת yth.",
+      } },
     ],
     next: { title: "Tuples", path: "/tutorials/python/Tuples" },
   },
@@ -156,17 +237,32 @@ print(language[::-1]) # nohtyP` },
     title: "Tuples",
     intro: ["Tuple הוא אוסף מסודר שאי אפשר לשנות לאחר יצירתו. הוא מתאים לערכים שצריכים להישאר קבועים, כמו נקודה במרחב או צבע RGB."],
     sections: [
-      { title: "יצירה וגישה", code: `point = (10, 20)
+      { title: "יצירה וגישה", paragraphs: ["כותבים את הערכים מופרדים בפסיקים. הסוגריים מקובלים ומשפרים קריאות; ב־tuple עם איבר יחיד הפסיק הוא שמבדיל אותו מערך רגיל."], code: `point = (10, 20)
 print(point[0])  # 10
 
 single_item = (5,)  # הפסיק הכרחי
 empty_tuple = ()` },
-      { title: "פירוק ערכים", paragraphs: ["אפשר לשייך את איברי ה־tuple למספר משתנים בפעולה אחת."], code: `person = ("Dana", 24, "Haifa")
+      { title: "פירוק ערכים", paragraphs: ["אפשר לשייך את איברי ה־tuple למספר משתנים בפעולה אחת. מספר המשתנים צריך להתאים למספר האיברים."], code: `person = ("Dana", 24, "Haifa")
 name, age, city = person
 
 print(name)
 print(age)
-print(city)` },
+print(city)`, exercise: {
+        id: "python-tuples-predict-output-1",
+        type: "predict_output",
+        prompt: "מה יודפס לאחר פירוק ה־tuple?",
+        code: `point = (4, 9)
+x, y = point
+print(y)`,
+        options: [
+          { id: "nine", label: "9" },
+          { id: "four", label: "4" },
+          { id: "tuple", label: "(4, 9)" },
+        ],
+        correctOptionId: "nine",
+        hint: "המשתנים מקבלים את הערכים לפי הסדר.",
+        explanation: "x מקבל את 4 ו־y מקבל את 9, ולכן print(y) מציגה 9.",
+      } },
       { title: "מה כן אפשר לעשות?", paragraphs: ["אי אפשר להחליף איבר, אך אפשר לקרוא, לחתוך, לספור ולחפש אינדקס."], code: `colors = ("red", "blue", "red", "green")
 
 print(colors.count("red"))  # 2
@@ -179,19 +275,34 @@ print(colors[1:3])           # ("blue", "red")` },
     title: "Sets",
     intro: ["Set הוא אוסף לא מסודר של ערכים ייחודיים. הוא שימושי להסרת כפילויות ולבדיקות חברות מהירות."],
     sections: [
-      { title: "יצירה ועדכון", code: `numbers = {1, 2, 2, 3}
+      { title: "יצירה ועדכון", paragraphs: ["Set שומר כל ערך פעם אחת בלבד. סדר ההדפסה אינו מובטח, ולכן לא ניגשים לאיברים בעזרת אינדקס."], code: `numbers = {1, 2, 2, 3}
 print(numbers)  # {1, 2, 3}
 
 numbers.add(4)
 numbers.discard(2)  # לא נכשל אם הערך חסר
 print(3 in numbers) # True` },
-      { title: "פעולות בין קבוצות", paragraphs: ["איחוד מחבר ערכים; חיתוך משאיר משותפים; הפרש משאיר את הערכים שנמצאים רק בקבוצה הראשונה."], code: `python_students = {"Dana", "Noam", "Roni"}
+      { title: "פעולות בין קבוצות", paragraphs: ["איחוד מחבר ערכים; חיתוך משאיר משותפים; הפרש משאיר את הערכים שנמצאים רק בקבוצה הראשונה. הפעולות מחזירות קבוצה חדשה."], code: `python_students = {"Dana", "Noam", "Roni"}
 web_students = {"Noam", "Roni", "Amit"}
 
 print(python_students | web_students) # union
 print(python_students & web_students) # intersection
-print(python_students - web_students) # difference` },
-      { title: "הסרת כפילויות", code: `names = ["Dana", "Noam", "Dana", "Roni"]
+print(python_students - web_students) # difference`, exercise: {
+        id: "python-sets-predict-output-1",
+        type: "predict_output",
+        prompt: "איזו קבוצה תתקבל בחיתוך?",
+        code: `first = {1, 2, 3}
+second = {2, 3, 4}
+print(first & second)`,
+        options: [
+          { id: "intersection", label: "{2, 3}" },
+          { id: "union", label: "{1, 2, 3, 4}" },
+          { id: "difference", label: "{1}" },
+        ],
+        correctOptionId: "intersection",
+        hint: "הסימן & משאיר רק ערכים שנמצאים בשתי הקבוצות.",
+        explanation: "רק 2 ו־3 מופיעים גם ב־first וגם ב־second.",
+      } },
+      { title: "הסרת כפילויות", paragraphs: ["המרה של רשימה ל־set מסירה כפילויות. כשממירים בחזרה לרשימה, אין להסתמך על הסדר המקורי של האיברים."], code: `names = ["Dana", "Noam", "Dana", "Roni"]
 unique_names = list(set(names))
 print(unique_names)` },
     ],
@@ -201,7 +312,7 @@ print(unique_names)` },
     title: "מילונים (dict)",
     intro: ["מילון שומר זוגות של מפתח וערך. כל מפתח ייחודי, ובעזרתו ניגשים לערך המתאים בלי לחפש לפי מיקום."],
     sections: [
-      { title: "יצירה, קריאה ועדכון", code: `student = {
+      { title: "יצירה, קריאה ועדכון", paragraphs: ["מגדירים מילון בעזרת סוגריים מסולסלים וזוגות של מפתח וערך. גישה למפתח מחזירה את הערך שלו, והשמה לאותו מפתח מעדכנת אותו."], code: `student = {
     "name": "Dana",
     "age": 24,
     "course": "Python"
@@ -214,8 +325,20 @@ student["city"] = "Haifa"` },
 print(student.get("grade", "N/A")) # N/A
 
 if "course" in student:
-    print(student["course"])` },
-      { title: "מעבר על מילון", code: `for key, value in student.items():
+    print(student["course"])`, exercise: {
+        id: "python-dicts-find-bug-1",
+        type: "find_bug",
+        prompt: "באיזו שורה חסר סימן שיגרום לשגיאת תחביר?",
+        codeLines: [
+          "student = {\"name\": \"Dana\"}",
+          "if \"name\" in student",
+          "    print(student[\"name\"])",
+        ],
+        correctLineIndex: 1,
+        hint: "בדקו כיצד מסתיימת שורת if בפייתון.",
+        explanation: "שורת התנאי חייבת להסתיים בנקודתיים (:).",
+      } },
+      { title: "מעבר על מילון", paragraphs: ["items מחזירה זוגות של מפתח וערך. אם צריך רק צד אחד, משתמשים ב־keys או ב־values."], code: `for key, value in student.items():
     print(f"{key}: {value}")
 
 for key in student.keys():
@@ -223,7 +346,7 @@ for key in student.keys():
 
 for value in student.values():
     print(value)` },
-      { title: "מחיקה", code: `removed_age = student.pop("age")
+      { title: "מחיקה", paragraphs: ["pop מסירה מפתח ומחזירה את הערך שהיה שמור בו. del מוחקת מפתח בלי להחזיר אותו, ו־clear מרוקנת את המילון."], code: `removed_age = student.pop("age")
 del student["city"]
 print(removed_age)
 
@@ -242,7 +365,7 @@ student.clear()` },
 
 romi = Person("Romi", 26)
 print(romi.name)` },
-      { title: "פעולות של אובייקט", paragraphs: ["פעולה שמוגדרת במחלקה מקבלת self ויכולה להשתמש בתכונות האובייקט."], code: `class Person:
+      { title: "פעולות של אובייקט", paragraphs: ["פעולה שמוגדרת במחלקה מקבלת self ויכולה להשתמש בתכונות האובייקט. בקריאה דרך אובייקט אין צורך להעביר את self בעצמנו."], code: `class Person:
     def __init__(self, name, age):
         self.name = name
         self.age = age
@@ -251,8 +374,23 @@ print(romi.name)` },
         print(f"Hello, I am {self.name} and I am {self.age}")
 
 romi = Person("Romi", 26)
-romi.hello()` },
-      { title: "כל אובייקט עצמאי", code: `dana = Person("Dana", 22)
+romi.hello()`, exercise: {
+        id: "python-oop-fill-self-1",
+        type: "fill_blank",
+        prompt: "איזה פרמטר חסר בפעולת המופע?",
+        code: `class Dog:
+    def bark(___):
+        print(f"{___.name}: Woof!")`,
+        options: [
+          { id: "self", label: "self" },
+          { id: "class", label: "class" },
+          { id: "this", label: "this" },
+        ],
+        correctOptionId: "self",
+        hint: "זהו השם המקובל לאובייקט הנוכחי בפייתון.",
+        explanation: "self מפנה לאובייקט שעליו הפעולה נקראה ומאפשרת לגשת לתכונות שלו.",
+      } },
+      { title: "כל אובייקט עצמאי", paragraphs: ["כל קריאה למחלקה יוצרת אובייקט חדש עם מצב משלו. שינוי תכונה באובייקט אחד אינו משנה אובייקטים אחרים."], code: `dana = Person("Dana", 22)
 noam = Person("Noam", 30)
 
 dana.age = 23
@@ -265,7 +403,7 @@ print(noam.age) # 30` },
     title: "הפעולה __str__",
     intro: ["כאשר מדפיסים אובייקט, פייתון זקוקה לייצוג טקסטואלי שלו. הפעולה המיוחדת __str__ מאפשרת למחלקה להחליט איזה טקסט יוחזר."],
     sections: [
-      { title: "לפני שמגדירים __str__", code: `romi = Person("Romi", 26)
+      { title: "לפני שמגדירים __str__", paragraphs: ["ללא __str__, Python מציגה ייצוג טכני שמכיל את שם המחלקה וכתובת פנימית. הוא שימושי למחשב אך לא לקורא."], code: `romi = Person("Romi", 26)
 print(romi)
 # <__main__.Person object at 0x...>` },
       { title: "ייצוג קריא", paragraphs: ["__str__ חייבת להחזיר מחרוזת. print ו-str ישתמשו בה אוטומטית."], code: `class Person:
@@ -278,7 +416,21 @@ print(romi)
 
 romi = Person("Romi", 26)
 print(romi)
-# My name is Romi and I am 26` },
+# My name is Romi and I am 26`, exercise: {
+        id: "python-string-representation-fill-return-1",
+        type: "fill_blank",
+        prompt: "איזו מילה חסרה כדי ש־__str__ תחזיר טקסט?",
+        code: `def __str__(self):
+    ___ f"Person: {self.name}"`,
+        options: [
+          { id: "return", label: "return" },
+          { id: "print", label: "print" },
+          { id: "yield", label: "yield" },
+        ],
+        correctOptionId: "return",
+        hint: "__str__ צריכה למסור מחרוזת בחזרה ל־print.",
+        explanation: "__str__ חייבת להחזיר str בעזרת return; הדפסה בתוך הפעולה אינה מספיקה.",
+      } },
     ],
     next: { title: "כימוס", path: "/tutorials/python/Encapsulation" },
   },
@@ -310,7 +462,7 @@ romi = Person("Romi", 26)
 romi = Person("Romi", 26)
 romi.set_age(-1)      # Invalid age
 print(romi.get_age()) # 26` },
-      { title: "Properties — הדרך הפייתונית", code: `class Person:
+      { title: "Properties — הדרך הפייתונית", paragraphs: ["property מאפשרת להשתמש בתחביר פשוט של תכונה, בזמן שהמחלקה עדיין מפעילה קוד בדיקה בעת קריאה או עדכון."], code: `class Person:
     def __init__(self, age):
         self.age = age
 
@@ -322,7 +474,23 @@ print(romi.get_age()) # 26` },
     def age(self, value):
         if value < 0:
             raise ValueError("Age cannot be negative")
-        self.__age = value` },
+        self.__age = value`, exercise: {
+        id: "python-encapsulation-fill-property-1",
+        type: "fill_blank",
+        prompt: "איזה decorator הופך פעולה לקריאה כמו תכונה?",
+        code: `class Person:
+    @___
+    def age(self):
+        return self.__age`,
+        options: [
+          { id: "property", label: "property" },
+          { id: "staticmethod", label: "staticmethod" },
+          { id: "private", label: "private" },
+        ],
+        correctOptionId: "property",
+        hint: "שם ה־decorator זהה לשם המנגנון שמוסבר בפרק.",
+        explanation: "@property מאפשר לקרוא person.age בלי סוגריים, בעוד שהמימוש נשאר פעולה.",
+      } },
     ],
     next: { title: "ירושה", path: "/tutorials/python/Inheritance" },
   },
@@ -342,12 +510,33 @@ class Student(Person):
 
 student = Student("Romi", 22, 87.2)
 print(student.name)` },
-      { title: "בדיקת סוג", code: `print(isinstance(student, Student)) # True
+      { title: "בדיקת סוג", paragraphs: ["isinstance בודקת גם את המחלקה הישירה וגם מחלקות אב. לכן אובייקט Student הוא גם Student וגם Person."], code: `print(isinstance(student, Student)) # True
 print(isinstance(student, Person))  # True
 print(isinstance(student, int))     # False` },
-      { title: "דריסת פעולה", paragraphs: ["מחלקת בת יכולה להגדיר פעולה באותו שם ולהתאים את ההתנהגות שלה."], code: `class Student(Person):
+      { title: "דריסת פעולה", paragraphs: ["מחלקת בת יכולה להגדיר פעולה באותו שם ולהתאים את ההתנהגות שלה. בקריאה דרך אובייקט הבת, הגרסה של מחלקת הבת נבחרת."], code: `class Student(Person):
     def describe(self):
-        return f"{self.name}, average: {self.grade_average}"` },
+        return f"{self.name}, average: {self.grade_average}"`, exercise: {
+        id: "python-inheritance-predict-override-1",
+        type: "predict_output",
+        prompt: "איזו פעולה תיבחר?",
+        code: `class Person:
+    def role(self):
+        return "Person"
+
+class Student(Person):
+    def role(self):
+        return "Student"
+
+print(Student().role())`,
+        options: [
+          { id: "student", label: "Student" },
+          { id: "person", label: "Person" },
+          { id: "both", label: "Person Student" },
+        ],
+        correctOptionId: "student",
+        hint: "מחלקת הבת הגדירה פעולה באותו שם.",
+        explanation: "הפעולה של Student דורסת את הפעולה שירשה מ־Person.",
+      } },
     ],
     next: { title: "פעולות סטטיות", path: "/tutorials/python/StaticMethods" },
   },
@@ -365,6 +554,9 @@ print(isinstance(student, int))     # False` },
 rexi = Dog("Rexi")
 rexi.bark()` },
       { title: "staticmethod ו־classmethod", paragraphs: ["staticmethod לא מקבלת self. classmethod מקבלת cls ומתאימה לבנאים חלופיים או לפעולה שתלויה במחלקה עצמה."], code: `class Temperature:
+    def __init__(self, celsius):
+        self.celsius = celsius
+
     @staticmethod
     def celsius_to_fahrenheit(celsius):
         return celsius * 9 / 5 + 32
@@ -373,8 +565,24 @@ rexi.bark()` },
     def freezing_point(cls):
         return cls(0)
 
-print(Temperature.celsius_to_fahrenheit(20))` },
-      { title: "מחלקת שירות", code: `class StringUtils:
+print(Temperature.celsius_to_fahrenheit(20))`, exercise: {
+        id: "python-static-methods-fill-decorator-1",
+        type: "fill_blank",
+        prompt: "איזה decorator מתאים לפעולה שאינה משתמשת ב־self או ב־cls?",
+        code: `class MathTools:
+    @___
+    def square(number):
+        return number ** 2`,
+        options: [
+          { id: "static", label: "staticmethod" },
+          { id: "class", label: "classmethod" },
+          { id: "property", label: "property" },
+        ],
+        correctOptionId: "static",
+        hint: "הפעולה קשורה למחלקה אך אינה זקוקה לאובייקט או למחלקה עצמה.",
+        explanation: "@staticmethod מתאימה לפעולת עזר שאינה מקבלת self או cls.",
+      } },
+      { title: "מחלקת שירות", paragraphs: ["כאשר כמה פעולות קשורות לאותו נושא אך אינן זקוקות למצב, אפשר לרכז אותן במחלקת שירות כפעולות סטטיות."], code: `class StringUtils:
     @staticmethod
     def reverse(text):
         return text[::-1]
@@ -402,7 +610,7 @@ print(StringUtils.count_vowels("Hello World"))` },
         if age < 0:
             raise ValueError("Invalid age")
         self._age = age` },
-      { title: "גישה ממחלקת בת", code: `class Student(Person):
+      { title: "גישה ממחלקת בת", paragraphs: ["מחלקת הבת יכולה להשתמש בתכונות המוגנות שירשה. הקו התחתון אינו מנגנון אבטחה, אלא סימן למפתחים שהתכונה פנימית."], code: `class Student(Person):
     def __init__(self, name, age, average):
         super().__init__(name, age)
         self._average = average
@@ -414,7 +622,22 @@ print(StringUtils.count_vowels("Hello World"))` },
         )
 
 student = Student("Dana", 21, 92)
-print(student)` },
+print(student)`, exercise: {
+        id: "python-inheritance-encapsulation-fill-protected-1",
+        type: "fill_blank",
+        prompt: "איזה שם מתאים למוסכמת protected?",
+        code: `class Person:
+    def __init__(self, name):
+        self.___ = name`,
+        options: [
+          { id: "protected", label: "_name" },
+          { id: "public", label: "name" },
+          { id: "dunder", label: "__name__" },
+        ],
+        correctOptionId: "protected",
+        hint: "מוסכמת protected משתמשת בקו תחתון יחיד בתחילת השם.",
+        explanation: "השם _name מסמן שהתכונה מיועדת לשימוש פנימי ולמחלקות יורשות.",
+      } },
       { title: "בחירה נכונה", paragraphs: ["השתמשו בתכונה ציבורית כשאין צורך להגביל אותה, ב־protected לשיתוף מכוון עם יורשות, ובתכונה פרטית כשפרטי המימוש צריכים להישאר בתוך המחלקה."],
       },
     ],
@@ -424,12 +647,11 @@ print(student)` },
     title: "ספריות חיצוניות",
     intro: ["ספרייה חיצונית היא קוד שמפתח אחר ארז לשימוש חוזר. מתקינים חבילות מהמאגר PyPI בעזרת pip, ואז מייבאים אותן לתוכנית."],
     sections: [
-      { title: "התקנה וייבוא", paragraphs: ["את פקודת ההתקנה מריצים בטרמינל, לא בתוך קובץ Python. כדאי לעבוד בסביבה וירטואלית לכל פרויקט."], code: `# Terminal
-python -m pip install matplotlib
+      { title: "התקנה", paragraphs: ["את פקודת ההתקנה מריצים בטרמינל, לא בתוך קובץ Python. הצורה python -m pip מוודאת שהחבילה מותקנת עבור אותה גרסת Python שמריצה את התוכנית."], code: `python -m pip install matplotlib`, language: "bash" },
+      { title: "ייבוא", paragraphs: ["אחרי ההתקנה משתמשים ב־import בתוך קובץ Python. אפשר לתת שם קצר בעזרת as כדי שהקריאות בהמשך יהיו נוחות יותר."], code: `import matplotlib.pyplot as plt
 
-# Python file
-import matplotlib.pyplot as plt`, language: "bash" },
-      { title: "ציור גרף עם matplotlib", code: `import matplotlib.pyplot as plt
+plt.title("My first chart")` },
+      { title: "ציור גרף עם matplotlib", paragraphs: ["הדוגמה יוצרת שתי רשימות של נקודות, מציירת קו, מוסיפה כותרות ולבסוף פותחת חלון עם הגרף."], code: `import matplotlib.pyplot as plt
 
 x = [1, 2, 3, 4, 5]
 y = [-2, 7, 3, 6, 9]
@@ -449,7 +671,22 @@ response.raise_for_status()
 items = response.json()` },
       { title: "עבודה אחראית", paragraphs: ["קראו את התיעוד, בדקו שהספרייה מתוחזקת, וקבעו גרסאות בקובץ requirements.txt כדי שהפרויקט יהיה ניתן לשחזור."], code: `# requirements.txt
 matplotlib==3.9.2
-requests==2.32.3`, language: "text" },
+requests==2.32.3`, language: "text", exercise: {
+        id: "python-external-libraries-fill-import-1",
+        type: "fill_blank",
+        prompt: "איזו מילה חסרה כדי לטעון את הספרייה?",
+        code: `___ requests
+
+response = requests.get("https://example.com")`,
+        options: [
+          { id: "import", label: "import" },
+          { id: "install", label: "install" },
+          { id: "include", label: "include" },
+        ],
+        correctOptionId: "import",
+        hint: "החבילה כבר מותקנת; עכשיו צריך לטעון אותה לתוכנית.",
+        explanation: "import טוענת את המודול ומאפשרת לגשת לפעולות שלו דרך השם requests.",
+      } },
     ],
   },
 } satisfies Record<string, PythonLessonContent>;

@@ -4,12 +4,15 @@ import { Href, router, useNavigation } from "expo-router";
 import { useEffect } from "react";
 import Section from "./Section";
 import PythonTutorialTemplate from "@/app/tutorials/python/PythonTutorialTemplate";
+import InteractiveExercise from "./exercises/InteractiveExercise";
+import type { TutorialExerciseDefinition } from "./exercises/types";
 
 export type PythonLessonSection = {
   title?: string;
   paragraphs?: string[];
   code?: string;
   language?: string;
+  exercise?: TutorialExerciseDefinition;
 };
 
 export type PythonLessonContent = {
@@ -52,6 +55,9 @@ export default function PythonLessonPage({ lesson }: { lesson: PythonLessonConte
           ))}
           {section.code ? (
             <CodeSnippet language={section.language ?? "python"} code={section.code} />
+          ) : null}
+          {section.exercise ? (
+            <InteractiveExercise exercise={section.exercise} />
           ) : null}
         </Section>
       ))}

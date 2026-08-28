@@ -3,9 +3,9 @@ import PythonTutorialTemplate from "./PythonTutorialTemplate";
 import { useEffect } from "react";
 import { P, TutorialH4 as H4 } from "@/components/UI/typography/Typography";
 import CodeSnippet from "@/components/UI/code_snippets/CodeSnippet";
-import { Image } from "expo-image";
 import TutorialImage from "@/components/tutorials/TutorialImage";
 import Section from "@/components/tutorials/Section";
+import InteractiveExercise from "@/components/tutorials/exercises/InteractiveExercise";
 
 export default function Variables() {
   const navigation = useNavigation();
@@ -43,8 +43,8 @@ print(x)`;
       <Section>
         <P>לכל משתנה יש 3 תכונות עיקריות:</P>
         <P style={{ marginBottom: 16 }}>
-          שם המשתנה, למשל x, name, my_variable וכו׳. טיפוס המשתנה: int, string,
-          bool, float ערך: hello”, False, 6, 5.31” וכו׳...
+          שם, טיפוס וערך. לדוגמה, במשתנה age השם הוא age, הטיפוס יכול להיות int,
+          והערך יכול להיות 24.
         </P>
       </Section>
 
@@ -66,9 +66,9 @@ print(x)`;
         <H4>כללים ביצירת משתנים</H4>
         <P style={{ marginBottom: 16 }}>
           כאשר יוצרים משתנה חדש בפייתון יש לעקוב אחר מספר חוקים שנוגעים לשמו של
-          המשתנה. על שם המשתנה להכל רק תווים אלפא-נומרים ומקף תחתון - כלומר:
+          המשתנה. שם יכול להכיל אותיות, ספרות ומקף תחתון - כלומר:
           A-Z, a-z, 0-9, _ (מקף תחתון). בנוסף, שמו של המשתנה לא יכול להתחיל
-          בספרה
+          בספרה, ואסור להשתמש במילה שמורה כמו if או for.
         </P>
         <P style={{ marginBottom: 16 }}>
           מומלץ להעניק למשתנים שמות בהתאם למה שהם מייצגים. למשל אם נרצה לשמור שם
@@ -81,6 +81,43 @@ print(x)`;
         </P>
         <CodeSnippet language="python" code={`num_of_participants = 4`} />
       </Section>
+
+      <Section>
+        <H4>עדכון ערך</H4>
+        <P style={{ marginBottom: 12 }}>
+          סימן השוויון כאן אינו שאלה מתמטית. הוא אומר: חשבו את הביטוי בצד ימין
+          ושמרו את התוצאה במשתנה שבצד שמאל.
+        </P>
+        <CodeSnippet
+          language="python"
+          code={`score = 10
+score = score + 5
+print(score)  # 15`}
+        />
+        <P>
+          בשורה השנייה Python קוראת קודם את הערך הישן של score, מוסיפה 5, ואז
+          מחליפה את הערך השמור בתוצאה החדשה.
+        </P>
+      </Section>
+
+      <InteractiveExercise
+        exercise={{
+          id: "python-variables-trace-1",
+          type: "trace",
+          prompt: "מה יהיה הערך של points בסוף?",
+          code: `points = 4
+points = points + 3
+points = points * 2`,
+          options: [
+            { id: "14", label: "14" },
+            { id: "10", label: "10" },
+            { id: "11", label: "11" },
+          ],
+          correctOptionId: "14",
+          hint: "עברו שורה־שורה ועדכנו את הערך אחרי כל פעולה.",
+          explanation: "מתחילים ב־4, מוסיפים 3 ומקבלים 7, ואז מכפילים ב־2 ומקבלים 14.",
+        }}
+      />
     </PythonTutorialTemplate>
   );
 }

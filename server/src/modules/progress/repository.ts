@@ -64,6 +64,19 @@ export interface LearningSummaryRow {
   lastActivityAt: Date | null;
 }
 
+export interface TutorialExerciseProgressRow {
+  exerciseId: string;
+  lessonId: string;
+  lessonSlug: string;
+  courseSlug: string;
+  attemptsCount: number;
+  completed: boolean;
+  hintUsed: boolean;
+  solutionRevealed: boolean;
+  completedAt: Date | null;
+  lastAttemptedAt: Date | null;
+}
+
 type WritableLessonStatus = "in_progress" | "completed";
 
 export class ProgressRepository {
@@ -82,6 +95,8 @@ export class ProgressRepository {
       WITH activity_days AS (
         SELECT created_at::date AS day FROM attempts WHERE user_id = $1
         UNION
+        SELECT created_at::date AS day FROM tutorial_exercise_submissions WHERE user_id = $1
+        UNION
         SELECT last_accessed_at::date AS day FROM lesson_progress WHERE user_id = $1
       ), streak_rows AS (
         SELECT
@@ -98,6 +113,15 @@ export class ProgressRepository {
           max(created_at) AS last_attempted_at
         FROM attempts
         WHERE user_id = $1
+      ), tutorial_attempt_totals AS (
+        SELECT
+          count(*) FILTER (WHERE action = 'check')::integer AS total_attempts,
+          count(*) FILTER (WHERE is_correct)::integer AS correct_attempts,
+          count(DISTINCT exercise_id) FILTER (WHERE action = 'check')::integer AS answered_questions,
+          count(DISTINCT exercise_id) FILTER (WHERE is_correct)::integer AS correctly_answered_questions,
+          max(created_at) AS last_attempted_at
+        FROM tutorial_exercise_submissions
+        WHERE user_id = $1
       ), lesson_totals AS (
         SELECT
           count(*) FILTER (WHERE lp.status = 'completed')::integer AS completed_lessons,
@@ -113,12 +137,13 @@ export class ProgressRepository {
         (SELECT count(*)::integer FROM enrollments WHERE user_id = $1 AND completed_at IS NOT NULL) AS "completedCourses",
         lt.completed_lessons AS "completedLessons",
         lt.total_lessons AS "totalLessons",
-        at.answered_questions AS "answeredQuestions",
-        at.correctly_answered_questions AS "correctlyAnsweredQuestions",
-        at.total_attempts AS "totalAttempts",
-        at.correct_attempts AS "correctAttempts",
-        CASE WHEN at.total_attempts = 0 THEN 0
-          ELSE round(100.0 * at.correct_attempts / at.total_attempts)::integer
+        (at.answered_questions + tat.answered_questions)::integer AS "answeredQuestions",
+        (at.correctly_answered_questions + tat.correctly_answered_questions)::integer AS "correctlyAnsweredQuestions",
+        (at.total_attempts + tat.total_attempts)::integer AS "totalAttempts",
+        (at.correct_attempts + tat.correct_attempts)::integer AS "correctAttempts",
+        CASE WHEN at.total_attempts + tat.total_attempts = 0 THEN 0
+          ELSE round(100.0 * (at.correct_attempts + tat.correct_attempts)
+            / (at.total_attempts + tat.total_attempts))::integer
         END AS "accuracyPercentage",
         (SELECT count(*)::integer FROM activity_days) AS "activeDays",
         COALESCE((
@@ -127,8 +152,10 @@ export class ProgressRepository {
           WHERE latest_day >= current_date - 1
             AND day = latest_day - (sequence::integer - 1)
         ), 0) AS "currentStreakDays",
-        GREATEST(at.last_attempted_at, lt.last_lesson_at) AS "lastActivityAt"
-      FROM attempt_totals at CROSS JOIN lesson_totals lt
+        GREATEST(at.last_attempted_at, tat.last_attempted_at, lt.last_lesson_at) AS "lastActivityAt"
+      FROM attempt_totals at
+      CROSS JOIN tutorial_attempt_totals tat
+      CROSS JOIN lesson_totals lt
     `, [userId]);
     const summary = result.rows[0];
     if (!summary) throw new Error("Learning summary query did not return a row");
@@ -277,6 +304,30 @@ export class ProgressRepository {
       JOIN question_counts qc ON qc.topic_id = t.id
       LEFT JOIN attempt_stats a ON a.topic_id = t.id
       ORDER BY a.last_attempted_at DESC NULLS LAST, t.title
+    `, [userId]);
+    return result.rows;
+  }
+
+  async listTutorialExerciseProgress(userId: string): Promise<TutorialExerciseProgressRow[]> {
+    const result = await this.database.query<TutorialExerciseProgressRow>(`
+      SELECT
+        te.id AS "exerciseId",
+        l.id AS "lessonId",
+        l.slug AS "lessonSlug",
+        c.slug AS "courseSlug",
+        COALESCE(tep.attempts_count, 0)::integer AS "attemptsCount",
+        COALESCE(tep.completed, false) AS completed,
+        COALESCE(tep.hint_used, false) AS "hintUsed",
+        COALESCE(tep.solution_revealed, false) AS "solutionRevealed",
+        tep.completed_at AS "completedAt",
+        tep.last_attempted_at AS "lastAttemptedAt"
+      FROM tutorial_exercises te
+      JOIN lessons l ON l.id = te.lesson_id AND l.status = 'published'
+      JOIN courses c ON c.id = l.course_id AND c.status = 'published'
+      LEFT JOIN tutorial_exercise_progress tep
+        ON tep.exercise_id = te.id AND tep.user_id = $1
+      WHERE te.status = 'published'
+      ORDER BY c.slug, l.position, te.id
     `, [userId]);
     return result.rows;
   }

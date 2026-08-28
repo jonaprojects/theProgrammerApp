@@ -73,4 +73,22 @@ describe("ProgressRepository", () => {
     assert.match(statement, /HAVING count\(\*\) >= 2/);
     assert.match(statement, /JOIN eligible_questions q ON q\.id = a\.question_id/);
   });
+
+  it("returns tutorial exercise progress owned by the requested user", async () => {
+    let statement = "";
+    let values: readonly unknown[] | undefined;
+    const database: Queryable = {
+      query: async <Row extends QueryResultRow>(text: string, queryValues?: readonly unknown[]) => {
+        statement = text;
+        values = queryValues;
+        return result([] as Row[]);
+      },
+    };
+
+    await new ProgressRepository(database).listTutorialExerciseProgress("user-1");
+
+    assert.match(statement, /tep\.user_id = \$1/);
+    assert.match(statement, /te\.status = 'published'/);
+    assert.deepEqual(values, ["user-1"]);
+  });
 });

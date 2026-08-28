@@ -25,12 +25,13 @@ export function registerProgressRoutes(
     if (!request.user) throw new UnauthorizedError();
     const user = await progress.getUserSummary(request.user.id);
     if (!user) throw new NotFoundError("User");
-    const [summary, enrollments, topics] = await Promise.all([
+    const [summary, enrollments, topics, tutorialExercises] = await Promise.all([
       progress.getLearningSummary(request.user.id),
       progress.listEnrollments(request.user.id),
       progress.listTopicProgress(request.user.id),
+      progress.listTutorialExerciseProgress(request.user.id),
     ]);
-    return { data: { user, summary, enrollments, topics } };
+    return { data: { user, summary, enrollments, topics, tutorialExercises } };
   });
 
   app.post("/me/enrollments", { preHandler: authenticate }, async (request, reply) => {

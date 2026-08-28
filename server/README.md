@@ -18,7 +18,8 @@ server/
 │   │   ├── health/             Service/database health
 │   │   ├── profiles/           Authenticated user profiles
 │   │   ├── progress/           Enrollments and user progress
-│   │   └── questions/          Topics and safe question delivery
+│   │   ├── questions/          Topics and safe question delivery
+│   │   └── tutorial-exercises/ Server-validated lesson exercises and rewards
 │   ├── shared/                 Cross-module errors and types
 │   ├── app.ts                  HTTP composition root
 │   └── server.ts               Process lifecycle
@@ -45,7 +46,7 @@ The API listens on port 3000 by default. `GET /health` checks both the process a
 
 The importer reads the existing question `.ts` files and Python tutorial `.tsx` files without executing application code. It uses the TypeScript syntax tree to accept only static content shapes, then validates and normalizes them before opening a database transaction.
 
-`npm run content:validate` performs a database-free dry run. `npm run content:import` upserts topics, questions, options, the Python course, and populated lessons. Stable source keys make repeat runs idempotent. Existing answer options are retained for historical attempts but made inactive when they disappear from source content.
+`npm run content:validate` performs a database-free dry run. `npm run content:import` upserts topics, questions, options, the Python course, populated lessons, and their interactive exercise answer keys. Stable source keys make repeat runs idempotent. Existing answer options are retained for historical attempts but made inactive when they disappear from source content.
 
 The normalization manifest is in `src/content-import/manifest.ts`. Empty tutorial placeholder files are reported as skipped. Repairable defects, such as duplicated legacy IDs, are preserved under deterministic keys and reported as normalizations. Malformed questions or unsupported tutorial components are reported as rejections. An import that has rejections still imports valid records but exits with code 2 so CI or a release process can flag the content problem.
 
@@ -69,6 +70,7 @@ Curated catalog additions live in `../data/questions/catalogExpansion.ts` and `.
 | `PATCH` | `/api/v1/me/profile` | Yes | Update display name or biography |
 | `POST` | `/api/v1/me/enrollments` | Yes | Enroll in a published course |
 | `PUT` | `/api/v1/me/courses/:courseSlug/lessons/:lessonSlug/progress` | Yes | Persist lesson access or completion |
+| `POST` | `/api/v1/me/tutorial-exercises/:exerciseId/submissions` | Yes | Check or reveal a tutorial answer and persist its result |
 
 Register or sign in, then send the returned opaque token as
 `Authorization: Bearer <token>`. Passwords are hashed with scrypt and unique salts.
@@ -76,6 +78,13 @@ Only SHA-256 hashes of the random session tokens are stored in PostgreSQL; sessi
 expire after 30 days and logout revokes the current session immediately. Set
 `AUTH_MODE=external` and inject another `Authenticate` implementation if a managed
 identity provider is introduced later.
+
+Tutorial-exercise submissions accept an idempotency key, an action (`check` or
+`reveal`), and the learner's answer for checks. The API validates answers against
+the imported key rather than trusting correctness reported by the client. The
+first correct answer earns five points and completes the corresponding lesson;
+later correct answers cannot farm points. Revealing a solution is persisted and
+disqualifies that exercise from awarding points.
 
 Example attempt body:
 
@@ -101,6 +110,8 @@ statistics; every enrolled course with exact lesson states and a deterministic
 resume lesson; and every exercise topic with completion, accuracy, mastery, and
 practice status. Completing every published lesson atomically marks the course
 enrollment complete. A completed lesson never regresses when it is opened again.
+The same response includes all tutorial exercise states for the current user so
+the app can restore attempts and completion on another device.
 
 ## Production notes
 

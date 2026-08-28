@@ -135,4 +135,29 @@ export type ApiProgress = {
   summary: ApiLearningSummary;
   enrollments: ApiEnrollmentProgress[];
   topics: ApiTopicProgress[];
+  tutorialExercises: ApiTutorialExerciseProgress[];
+};
+
+export type ApiTutorialExerciseProgress = {
+  exerciseId: string;
+  lessonId: string;
+  lessonSlug: string;
+  courseSlug: string;
+  attemptsCount: number;
+  completed: boolean;
+  hintUsed: boolean;
+  solutionRevealed: boolean;
+  completedAt: string | null;
+  lastAttemptedAt: string | null;
+};
+
+export type ApiTutorialExerciseSubmission = {
+  submissionId: string;
+  exerciseId: string;
+  action: "check" | "reveal";
+  isCorrect: boolean | null;
+  pointsAwarded: number;
+  totalPoints: number;
+  replayed: boolean;
+  progress: Omit<ApiTutorialExerciseProgress, "exerciseId" | "lessonId" | "lessonSlug" | "courseSlug">;
 };

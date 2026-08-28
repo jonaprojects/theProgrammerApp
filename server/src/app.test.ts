@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import type { Pool } from "pg";
 import { buildApp } from "./app.js";
 import type { AppConfig } from "./config/env.js";
+import { UnauthorizedError } from "./shared/errors.js";
 
 const config: AppConfig = {
   NODE_ENV: "test",
@@ -58,6 +59,28 @@ describe("API", () => {
 
     assert.equal(response.statusCode, 204);
     assert.match(response.headers["access-control-allow-methods"] ?? "", /PUT/);
+    await app.close();
+  });
+
+  it("protects tutorial exercise progress with authentication", async () => {
+    const app = await buildApp({
+      config,
+      database: createFakePool(),
+      authenticate: async () => { throw new UnauthorizedError(); },
+    });
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/me/tutorial-exercises/python-intro-predict-output-1/submissions",
+      payload: {
+        action: "check",
+        answer: "hello",
+        hintUsed: false,
+        idempotencyKey: "52f881f0-930d-41be-8eeb-07305a695869",
+      },
+    });
+
+    assert.equal(response.statusCode, 401);
+    assert.equal(response.json().error.code, "UNAUTHORIZED");
     await app.close();
   });
 });

@@ -6,6 +6,7 @@ import { H4, P } from "@/components/UI/typography/Typography";
 import { TableOfContentsModel } from "@/data/tutorials/models/tableOfContentsModel";
 import CourseHeader from "./CourseHeader";
 import Navbar from "@/components/UI/Navbar";
+import CourseNavigationBar from "./CourseNavigationBar";
 
 type TableOfContentsProps = {
   data: TableOfContentsModel;
@@ -19,7 +20,9 @@ export default function TableOfContents(props: TableOfContentsProps) {
     <Body>
       <Navbar />
       <ScrollView>
-        <CourseHeader backgroundImg={props.courseHeaderImg} />
+        <CourseHeader backgroundImg={props.courseHeaderImg}>
+          <CourseNavigationBar backFallbackPath="/my_courses" />
+        </CourseHeader>
         <Container style={styles.pageContent}>
           <View style={{ padding: 5 }}>
             {props.data.map((section, index) => {
@@ -77,8 +80,11 @@ export default function TableOfContents(props: TableOfContentsProps) {
 const styles = StyleSheet.create({
   pageContent: {
     flex: 1,
-    marginTop: -100,
-    paddingLeft: 16,
+    width: "100%",
+    maxWidth: 840,
+    alignSelf: "center",
+    marginTop: -40,
+    paddingHorizontal: 20,
   },
   lessonRow: {
     flexDirection: "row-reverse",

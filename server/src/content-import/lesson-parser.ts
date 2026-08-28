@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import ts from "typescript";
 import { collectStaticVariables, evaluateStaticExpression, type StaticValue } from "./static-evaluator.js";
-import type { ImportedLesson, LessonContentBlock } from "./types.js";
+import type { ImportedLesson, ImportedTutorialExercise, LessonContentBlock } from "./types.js";
 import { z } from "zod";
 import type { CatalogLessonManifestEntry } from "./manifest.js";
 
@@ -109,6 +109,11 @@ function blocksFromChildren(
       });
       continue;
     }
+    if (name === "InteractiveExercise") {
+      // Interactive exercises are rendered and persisted by the client. The course API
+      // continues to import the surrounding guide text and worked examples.
+      continue;
+    }
     if (name === "TutorialImage" || name === "Image") {
       blocks.push({ type: "image", assetKey: imageAssetKey(attributes) });
       continue;
@@ -118,6 +123,68 @@ function blocksFromChildren(
   }
 
   return blocks;
+}
+
+const exerciseBaseSchema = z.object({
+  id: z.string().min(1),
+  prompt: z.string().min(1),
+  explanation: z.string().min(1),
+  hint: z.string().min(1).optional(),
+});
+const tutorialExerciseSchema = z.discriminatedUnion("type", [
+  exerciseBaseSchema.extend({
+    type: z.enum(["predict_output", "fill_blank", "trace"]),
+    correctOptionId: z.string().min(1),
+  }),
+  exerciseBaseSchema.extend({
+    type: z.literal("find_bug"),
+    correctLineIndex: z.number().int().nonnegative(),
+  }),
+  exerciseBaseSchema.extend({
+    type: z.literal("order_code"),
+    correctOrder: z.array(z.string().min(1)).min(1),
+  }),
+]);
+
+function importedExercise(value: unknown): ImportedTutorialExercise {
+  const parsed = tutorialExerciseSchema.parse(value);
+  const answerKey = "correctOptionId" in parsed
+    ? parsed.correctOptionId
+    : "correctLineIndex" in parsed
+      ? parsed.correctLineIndex
+      : parsed.correctOrder;
+  return {
+    id: parsed.id,
+    type: parsed.type,
+    prompt: parsed.prompt,
+    explanation: parsed.explanation,
+    hint: parsed.hint ?? null,
+    answerKey,
+  };
+}
+
+function exercisesFromChildren(
+  children: readonly ts.JsxChild[],
+  variables: ReadonlyMap<string, StaticValue>,
+): ImportedTutorialExercise[] {
+  const exercises: ImportedTutorialExercise[] = [];
+  for (const child of children) {
+    if (ts.isJsxFragment(child)) {
+      exercises.push(...exercisesFromChildren(child.children, variables));
+      continue;
+    }
+    if (!ts.isJsxElement(child) && !ts.isJsxSelfClosingElement(child)) continue;
+    const opening = ts.isJsxElement(child) ? child.openingElement : child;
+    if (tagName(opening.tagName) === "InteractiveExercise") {
+      const expression = attributeExpression(opening.attributes, "exercise");
+      if (!expression) throw new Error("InteractiveExercise requires an exercise definition");
+      exercises.push(importedExercise(evaluateStaticExpression(expression, variables)));
+    }
+    if (ts.isJsxElement(child)) {
+      exercises.push(...exercisesFromChildren(child.children, variables));
+    }
+  }
+  return exercises;
 }
 
 function findTutorialRoot(sourceFile: ts.SourceFile): ts.JsxElement {
@@ -151,9 +218,10 @@ export async function parseLessonFile(
   const root = findTutorialRoot(sourceFile);
   const title = staticString(attributeExpression(root.openingElement.attributes, "title"), variables);
   const content = blocksFromChildren(root.children, variables);
+  const exercises = exercisesFromChildren(root.children, variables);
   if (content.length === 0) throw new Error("Lesson has no importable content blocks");
 
-  return { sourceKey, slug, title, position, content };
+  return { sourceKey, slug, title, position, content, exercises };
 }
 
 const catalogLessonSchema = z.object({
@@ -164,6 +232,7 @@ const catalogLessonSchema = z.object({
     paragraphs: z.array(z.string().min(1)).optional(),
     code: z.string().min(1).optional(),
     language: z.string().min(1).optional(),
+    exercise: tutorialExerciseSchema.optional(),
   })),
   next: z.object({ title: z.string(), path: z.string() }).optional(),
 });
@@ -209,12 +278,16 @@ export async function parseLessonCatalogFile(
         });
       }
     }
+    const exercises = parsed.sections.flatMap(({ exercise }) =>
+      exercise ? [importedExercise(exercise)] : [],
+    );
     return {
       sourceKey: `catalog:python-lesson:${entry.key}`,
       slug: entry.slug,
       title: parsed.title,
       position: startingPosition + index,
       content,
+      exercises,
     };
   });
 }

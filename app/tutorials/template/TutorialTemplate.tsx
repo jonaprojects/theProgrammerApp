@@ -18,7 +18,7 @@ type TutorialTemplateProps = PropsWithChildren<{
   completionPending?: boolean;
   progressError?: string | null;
   tableOfContentsPath: string;
-  coursesPath?: string;
+  myCoursesPath?: string;
   style?: StyleProp<ViewStyle>;
 }>;
 export default function TutorialTemplate(props: TutorialTemplateProps) {
@@ -35,7 +35,7 @@ export default function TutorialTemplate(props: TutorialTemplateProps) {
           title={props.headerTitle}
           style={styles.header}
           tableOfContentsPath={props.tableOfContentsPath}
-          coursesPath={props.coursesPath ?? "/courses"}
+          myCoursesPath={props.myCoursesPath ?? "/my_courses"}
         />
         <Container style={styles.pageContent}>
           {props.children}

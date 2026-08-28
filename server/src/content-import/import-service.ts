@@ -10,6 +10,7 @@ export interface ImportSummary {
   options: number;
   courses: number;
   lessons: number;
+  tutorialExercises: number;
   skippedEmptyLessons: string[];
   normalizations: ContentBundle["normalizations"];
   rejections: ContentBundle["rejections"];
@@ -124,7 +125,7 @@ export class ContentImportService {
 
       for (const lesson of bundle.lessons) {
         const lessonId = deterministicUuid(lesson.sourceKey);
-        await database.query(`
+        const lessonResult = await database.query<{ id: string }>(`
           INSERT INTO lessons (
             id, course_id, slug, title, position, content, status, source_key
           ) VALUES ($1, $2, $3, $4, $5, $6::jsonb, 'published', $7)
@@ -135,6 +136,7 @@ export class ContentImportService {
             position = EXCLUDED.position,
             content = EXCLUDED.content,
             status = 'published'
+          RETURNING id
         `, [
           lessonId,
           persistedCourseId,
@@ -144,6 +146,40 @@ export class ContentImportService {
           JSON.stringify(lesson.content),
           lesson.sourceKey,
         ]);
+        const persistedLessonId = lessonResult.rows[0]?.id;
+        if (!persistedLessonId) throw new Error(`Lesson upsert returned no id for ${lesson.sourceKey}`);
+
+        const activeExerciseIds: string[] = [];
+        for (const exercise of lesson.exercises) {
+          activeExerciseIds.push(exercise.id);
+          await database.query(`
+            INSERT INTO tutorial_exercises (
+              id, lesson_id, type, prompt, explanation, hint, answer_key, status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, 'published')
+            ON CONFLICT (id) DO UPDATE SET
+              lesson_id = EXCLUDED.lesson_id,
+              type = EXCLUDED.type,
+              prompt = EXCLUDED.prompt,
+              explanation = EXCLUDED.explanation,
+              hint = EXCLUDED.hint,
+              answer_key = EXCLUDED.answer_key,
+              status = 'published',
+              updated_at = now()
+          `, [
+            exercise.id,
+            persistedLessonId,
+            exercise.type,
+            exercise.prompt,
+            exercise.explanation,
+            exercise.hint,
+            JSON.stringify(exercise.answerKey),
+          ]);
+        }
+        await database.query(`
+          UPDATE tutorial_exercises
+          SET status = 'archived', updated_at = now()
+          WHERE lesson_id = $1 AND NOT (id = ANY($2::text[]))
+        `, [persistedLessonId, activeExerciseIds]);
       }
 
       return {
@@ -152,6 +188,7 @@ export class ContentImportService {
         options: optionCount,
         courses: 1,
         lessons: bundle.lessons.length,
+        tutorialExercises: bundle.lessons.reduce((total, lesson) => total + lesson.exercises.length, 0),
         skippedEmptyLessons: bundle.skippedEmptyLessons,
         normalizations: bundle.normalizations,
         rejections: bundle.rejections,
