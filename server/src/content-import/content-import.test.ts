@@ -21,15 +21,23 @@ describe("legacy content importer", () => {
       bundle.topics.every((topic) => topic.questions.length >= 50),
       "Every category must contain at least 50 valid questions",
     );
-    assert.equal(bundle.lessons.length, 23);
+    assert.deepEqual(bundle.courses.map(({ slug }) => slug), [
+      "python-basics",
+      "html-basics",
+      "css-basics",
+      "javascript-basics",
+      "git-basics",
+      "sql-basics",
+    ]);
+    assert.equal(bundle.lessons.length, 89);
     assert.equal(
       bundle.lessons.reduce((total, lesson) => total + lesson.exercises.length, 0),
-      23,
+      89,
     );
     assert.ok(bundle.lessons.every((lesson) => lesson.exercises.length === 1));
     assert.equal(
       new Set(bundle.lessons.flatMap((lesson) => lesson.exercises.map(({ id }) => id))).size,
-      23,
+      89,
     );
     assert.equal(bundle.rejections.length, 0);
     assert.equal(bundle.normalizations.length, 2);
@@ -48,7 +56,13 @@ describe("legacy content importer", () => {
       "Every non-introduction lesson should contain at least two worked code examples",
     );
     assert.equal(bundle.skippedEmptyLessons.length, 0);
-    assert.equal(bundle.lessons.at(-1)?.slug, "external-libraries");
+    assert.equal(bundle.lessons.filter(({ courseSlug }) => courseSlug === "python-basics").length, 23);
+    assert.equal(bundle.lessons.filter(({ courseSlug }) => courseSlug === "html-basics").length, 15);
+    assert.equal(bundle.lessons.filter(({ courseSlug }) => courseSlug === "css-basics").length, 15);
+    assert.equal(bundle.lessons.filter(({ courseSlug }) => courseSlug === "javascript-basics").length, 12);
+    assert.equal(bundle.lessons.filter(({ courseSlug }) => courseSlug === "git-basics").length, 12);
+    assert.equal(bundle.lessons.filter(({ courseSlug }) => courseSlug === "sql-basics").length, 12);
+    assert.equal(bundle.lessons.at(-1)?.slug, "transactions");
     const codeQuestions = bundle.topics.flatMap(({ questions }) => questions).filter(
       ({ codeSnippet }) => codeSnippet !== null,
     );

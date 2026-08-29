@@ -9,7 +9,7 @@ import PrimaryButton from "@/components/UI/buttons/PrimaryButton";
 import { P } from "@/components/UI/typography/Typography";
 
 type TutorialTemplateProps = PropsWithChildren<{
-  headerBackgroundImg: number;
+  headerBackgroundImg?: number;
   headerTitle: string;
   onNextPage?: () => void;
   nextPageTitle?: string;
@@ -75,13 +75,16 @@ const styles = StyleSheet.create({
   },
   pageContent: {
     flex: 1,
-    marginTop: -50,
+    marginTop: 0,
     width: "100%",
     maxWidth: 840,
     alignSelf: "center",
+    paddingTop: 20,
     paddingHorizontal: 20,
   },
-  header: {},
+  header: {
+    minHeight: 240,
+  },
   progressError: {
     marginTop: 16,
     color: "#FB7185",

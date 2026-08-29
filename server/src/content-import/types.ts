@@ -6,11 +6,20 @@ export type LessonContentBlock =
 
 export interface ImportedLesson {
   sourceKey: string;
+  courseSlug: string;
   slug: string;
   title: string;
   position: number;
   content: LessonContentBlock[];
   exercises: ImportedTutorialExercise[];
+}
+
+export interface ImportedCourse {
+  slug: string;
+  title: string;
+  description: string;
+  languageCode: string;
+  imageKey: string;
 }
 
 export interface ImportedTutorialExercise {
@@ -59,6 +68,7 @@ export interface ContentNormalization {
 
 export interface ContentBundle {
   topics: ImportedTopic[];
+  courses: ImportedCourse[];
   lessons: ImportedLesson[];
   skippedEmptyLessons: string[];
   normalizations: ContentNormalization[];

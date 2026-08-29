@@ -1,14 +1,14 @@
 import { H2 } from "@/components/UI/typography/Typography";
-import type { ImageStyle, StyleProp } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 import { View, StyleSheet } from "react-native";
 import CourseHeader from "./CourseHeader";
 import CourseNavigationBar from "./CourseNavigationBar";
 
 
 type TutorialHeaderProps = {
-  backgroundImg: number;
+  backgroundImg?: number;
   title: string;
-  style?: StyleProp<ImageStyle>;
+  style?: StyleProp<ViewStyle>;
   tableOfContentsPath: string;
   myCoursesPath: string;
 };

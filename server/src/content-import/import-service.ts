@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import { withTransaction } from "../db/transaction.js";
-import { pythonCourse } from "./manifest.js";
 import type { ContentBundle, ImportedQuestion } from "./types.js";
 
 export interface ImportSummary {
@@ -100,7 +99,8 @@ export class ContentImportService {
         }
       }
 
-      const courseId = deterministicUuid(`course:${pythonCourse.slug}`);
+      for (const course of bundle.courses) {
+      const courseId = deterministicUuid(`course:${course.slug}`);
       const courseResult = await database.query<{ id: string }>(`
         INSERT INTO courses (
           id, slug, title, description, language_code, image_key, status
@@ -114,16 +114,16 @@ export class ContentImportService {
         RETURNING id
       `, [
         courseId,
-        pythonCourse.slug,
-        pythonCourse.title,
-        pythonCourse.description,
-        pythonCourse.languageCode,
-        pythonCourse.imageKey,
+        course.slug,
+        course.title,
+        course.description,
+        course.languageCode,
+        course.imageKey,
       ]);
       const persistedCourseId = courseResult.rows[0]?.id;
-      if (!persistedCourseId) throw new Error(`Course upsert returned no id for ${pythonCourse.slug}`);
+      if (!persistedCourseId) throw new Error(`Course upsert returned no id for ${course.slug}`);
 
-      for (const lesson of bundle.lessons) {
+      for (const lesson of bundle.lessons.filter(({ courseSlug }) => courseSlug === course.slug)) {
         const lessonId = deterministicUuid(lesson.sourceKey);
         const lessonResult = await database.query<{ id: string }>(`
           INSERT INTO lessons (
@@ -181,12 +181,13 @@ export class ContentImportService {
           WHERE lesson_id = $1 AND NOT (id = ANY($2::text[]))
         `, [persistedLessonId, activeExerciseIds]);
       }
+      }
 
       return {
         topics: bundle.topics.length,
         questions: questionCount,
         options: optionCount,
-        courses: 1,
+        courses: bundle.courses.length,
         lessons: bundle.lessons.length,
         tutorialExercises: bundle.lessons.reduce((total, lesson) => total + lesson.exercises.length, 0),
         skippedEmptyLessons: bundle.skippedEmptyLessons,

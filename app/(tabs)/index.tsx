@@ -10,19 +10,20 @@ import TopicProgress from "@/components/UI/topic_progress/TopicProgress";
 import { H4, H5, P, SecondaryText } from "@/components/UI/typography/Typography";
 import { useProgress } from "@/context/ProgressContext";
 import { Colors } from "@/constants/Colors";
-import { pythonRoutesByLessonSlug } from "@/data/tutorials/python/lessonSlugs";
+import { courseLessonPath, courseTableOfContentsPath } from "@/data/tutorials/courseRoutes";
 import { getCourseImage } from "@/services/api/assets";
 import type { ApiEnrollmentProgress } from "@/services/api/types";
 
 function openCourse(enrollment: ApiEnrollmentProgress) {
-  if (enrollment.courseSlug === "python-basics" && enrollment.resumeLesson) {
-    const route = pythonRoutesByLessonSlug[enrollment.resumeLesson.lessonSlug];
-    if (route) {
-      router.navigate(`/tutorials/python/${route}` as Href);
+  if (enrollment.resumeLesson) {
+    const path = courseLessonPath(enrollment.courseSlug, enrollment.resumeLesson.lessonSlug);
+    if (path) {
+      router.navigate(path as Href);
       return;
     }
   }
-  router.navigate("/tutorials/python/CourseTableOfContents");
+  const contentsPath = courseTableOfContentsPath(enrollment.courseSlug);
+  if (contentsPath) router.navigate(contentsPath as Href);
 }
 
 export default function Home() {

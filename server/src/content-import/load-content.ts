@@ -4,8 +4,14 @@ import { fileURLToPath } from "node:url";
 import { parseLessonCatalogFile, parseLessonFile } from "./lesson-parser.js";
 import {
   expandedCatalogSourceFiles,
+  courseManifest,
+  cssLessonCatalogManifest,
+  gitLessonCatalogManifest,
+  htmlLessonCatalogManifest,
+  javascriptLessonCatalogManifest,
   pythonLessonCatalogManifest,
   pythonLessonManifest,
+  sqlLessonCatalogManifest,
   topicManifest,
 } from "./manifest.js";
 import { parseQuestionCatalogFile, parseQuestionFile } from "./question-parser.js";
@@ -88,6 +94,97 @@ export async function loadLegacyContent(root = projectRoot): Promise<ContentBund
     });
   }
 
+  const htmlLessonCatalogPath = resolve(root, "data", "tutorials", "html", "lessons.ts");
+  try {
+    lessons.push(...(await parseLessonCatalogFile(
+      htmlLessonCatalogPath,
+      htmlLessonCatalogManifest,
+      1,
+      {
+        variableName: "htmlLessons",
+        sourceKeyPrefix: "catalog:html-lesson",
+        courseSlug: "html-basics",
+        defaultLanguage: "html",
+      },
+    )));
+  } catch (error) {
+    rejections.push({
+      source: htmlLessonCatalogPath,
+      record: "htmlLessons",
+      reason: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  const cssLessonCatalogPath = resolve(root, "data", "tutorials", "css", "lessons.ts");
+  try {
+    lessons.push(...(await parseLessonCatalogFile(
+      cssLessonCatalogPath,
+      cssLessonCatalogManifest,
+      1,
+      {
+        variableName: "cssLessons",
+        sourceKeyPrefix: "catalog:css-lesson",
+        courseSlug: "css-basics",
+        defaultLanguage: "css",
+      },
+    )));
+  } catch (error) {
+    rejections.push({
+      source: cssLessonCatalogPath,
+      record: "cssLessons",
+      reason: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  const additionalCatalogs = [
+    {
+      path: resolve(root, "data", "tutorials", "javascript", "lessons.ts"),
+      manifest: javascriptLessonCatalogManifest,
+      variableName: "javascriptLessons",
+      sourceKeyPrefix: "catalog:javascript-lesson",
+      courseSlug: "javascript-basics",
+      defaultLanguage: "javascript",
+    },
+    {
+      path: resolve(root, "data", "tutorials", "git", "lessons.ts"),
+      manifest: gitLessonCatalogManifest,
+      variableName: "gitLessons",
+      sourceKeyPrefix: "catalog:git-lesson",
+      courseSlug: "git-basics",
+      defaultLanguage: "bash",
+    },
+    {
+      path: resolve(root, "data", "tutorials", "sql", "lessons.ts"),
+      manifest: sqlLessonCatalogManifest,
+      variableName: "sqlLessons",
+      sourceKeyPrefix: "catalog:sql-lesson",
+      courseSlug: "sql-basics",
+      defaultLanguage: "sql",
+    },
+  ] as const;
+
+  for (const catalog of additionalCatalogs) {
+    try {
+      lessons.push(...(await parseLessonCatalogFile(
+        catalog.path,
+        catalog.manifest,
+        1,
+        {
+          variableName: catalog.variableName,
+          sourceKeyPrefix: catalog.sourceKeyPrefix,
+          courseSlug: catalog.courseSlug,
+          defaultLanguage: catalog.defaultLanguage,
+        },
+      )));
+    } catch (error) {
+      rejections.push({
+        source: catalog.path,
+        record: catalog.variableName,
+        reason: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
   const importedFiles = new Set([
     ...pythonLessonManifest.map(({ sourceFile }) => sourceFile),
     ...pythonLessonCatalogManifest.map(({ key }) => `${key}.tsx`),
@@ -103,5 +200,5 @@ export async function loadLegacyContent(root = projectRoot): Promise<ContentBund
   }
   skippedEmptyLessons.sort();
 
-  return { topics, lessons, skippedEmptyLessons, normalizations, rejections };
+  return { topics, courses: [...courseManifest], lessons, skippedEmptyLessons, normalizations, rejections };
 }

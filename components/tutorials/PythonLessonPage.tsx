@@ -15,12 +15,14 @@ export type PythonLessonSection = {
   exercise?: TutorialExerciseDefinition;
 };
 
-export type PythonLessonContent = {
+export type TutorialLessonContent = {
   title: string;
   intro: string[];
   sections: PythonLessonSection[];
   next?: { title: string; path: string };
 };
+
+export type PythonLessonContent = TutorialLessonContent;
 
 export default function PythonLessonPage({ lesson }: { lesson: PythonLessonContent }) {
   const navigation = useNavigation();

@@ -111,7 +111,17 @@ Use Hebrew for the explanation and preserve the exact spelling of code elements.
 Write keywords and identifiers exactly as code: `if`, `else`, `self`, `print`,
 `__init__`. Do not translate them into look-alike Hebrew text. Use the Hebrew
 maqaf (`־`) when joining Hebrew and Latin text where appropriate, such as
-"ה־`if`". Avoid unnecessary English when a familiar Hebrew term is clearer.
+"ה־`if`".
+
+Keep established professional terms in English when that is how learners will
+see and use them in documentation, developer tools, and conversation. Do not
+invent a Hebrew translation or force a literal one merely because the tutorial
+is written in Hebrew. On first use, keep the English term and explain its
+meaning naturally in Hebrew; afterward, use the English term consistently.
+For example: `selector`, `cascade`, `specificity`, `Box Model`, `container`,
+`breakpoint`, `pseudo-class`, `focus ring`, and `Design System`. Prefer a
+familiar Hebrew term only when it sounds natural to developers and improves
+clarity, such as משתנה, פונקציה, לולאה or תנאי.
 
 Distinguish language rules from conventions. For example, Python enforces
 indentation, but `_name` as protected access is a convention rather than an

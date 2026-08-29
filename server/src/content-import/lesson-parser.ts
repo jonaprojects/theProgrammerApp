@@ -210,6 +210,7 @@ export async function parseLessonFile(
   sourceKey: string,
   slug: string,
   position: number,
+  courseSlug = "python-basics",
 ): Promise<ImportedLesson> {
   const source = await readFile(path, "utf8");
   if (!source.trim()) throw new Error("Lesson source is empty");
@@ -221,7 +222,7 @@ export async function parseLessonFile(
   const exercises = exercisesFromChildren(root.children, variables);
   if (content.length === 0) throw new Error("Lesson has no importable content blocks");
 
-  return { sourceKey, slug, title, position, content, exercises };
+  return { sourceKey, courseSlug, slug, title, position, content, exercises };
 }
 
 const catalogLessonSchema = z.object({
@@ -241,6 +242,7 @@ export async function parseLessonCatalogFile(
   path: string,
   manifest: readonly CatalogLessonManifestEntry[],
   startingPosition: number,
+  options: { variableName?: string; sourceKeyPrefix?: string; courseSlug?: string; defaultLanguage?: string } = {},
 ): Promise<ImportedLesson[]> {
   const source = await readFile(path, "utf8");
   const sourceFile = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
@@ -248,15 +250,15 @@ export async function parseLessonCatalogFile(
   sourceFile.forEachChild((node) => {
     if (!ts.isVariableStatement(node)) return;
     for (const declaration of node.declarationList.declarations) {
-      if (ts.isIdentifier(declaration.name) && declaration.name.text === "pythonLessons") {
+      if (ts.isIdentifier(declaration.name) && declaration.name.text === (options.variableName ?? "pythonLessons")) {
         initializer = declaration.initializer ?? null;
       }
     }
   });
-  if (!initializer) throw new Error("pythonLessons catalog was not found");
+  if (!initializer) throw new Error(`${options.variableName ?? "pythonLessons"} catalog was not found`);
   const raw = evaluateStaticExpression(initializer);
   if (!raw || Array.isArray(raw) || typeof raw !== "object") {
-    throw new Error("pythonLessons must be a static object");
+    throw new Error(`${options.variableName ?? "pythonLessons"} must be a static object`);
   }
 
   return manifest.map((entry, index) => {
@@ -273,7 +275,7 @@ export async function parseLessonCatalogFile(
       if (section.code) {
         content.push({
           type: "code",
-          language: section.language ?? "python",
+          language: section.language ?? options.defaultLanguage ?? "python",
           code: section.code,
         });
       }
@@ -282,7 +284,8 @@ export async function parseLessonCatalogFile(
       exercise ? [importedExercise(exercise)] : [],
     );
     return {
-      sourceKey: `catalog:python-lesson:${entry.key}`,
+      sourceKey: `${options.sourceKeyPrefix ?? "catalog:python-lesson"}:${entry.key}`,
+      courseSlug: options.courseSlug ?? "python-basics",
       slug: entry.slug,
       title: parsed.title,
       position: startingPosition + index,
