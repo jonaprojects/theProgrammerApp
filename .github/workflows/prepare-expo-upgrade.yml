@@ -58,15 +58,15 @@ jobs:
             exit "$status"
           fi
       - name: Verify a clean install
-        run: npm ci
+        run: node .github/scripts/run-checked.mjs "Strict npm install failed" npm ci
       - name: Run Expo compatibility diagnostics
-        run: npx --yes expo-doctor
+        run: node .github/scripts/run-checked.mjs "Expo Doctor failed" npx --yes expo-doctor
       - name: Type-check application
-        run: npm run typecheck
+        run: node .github/scripts/run-checked.mjs "Application type-check failed" npm run typecheck
       - name: Run bounded application tests
-        run: npm run test:ci
+        run: node .github/scripts/run-checked.mjs "Application tests failed" npm run test:ci
       - name: Build production web bundle
-        run: npm run build:web
+        run: node .github/scripts/run-checked.mjs "Production web build failed" npm run build:web
         env:
           EXPO_PUBLIC_API_URL: https://api.example.invalid/api/v1
       - name: Enforce production dependency security gate
