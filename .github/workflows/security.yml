@@ -18,14 +18,40 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: npm
       - name: Audit app runtime dependencies
-        run: npm audit --omit=dev --audit-level=high
+        id: app_audit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          npm audit --omit=dev --audit-level=high --json > "$RUNNER_TEMP/app-audit.json"
+          status=$?
+          set -e
+          node .github/scripts/summarize-audit.mjs "$RUNNER_TEMP/app-audit.json" app
+          exit "$status"
       - name: Install pnpm
         run: corepack enable && corepack prepare pnpm@10.15.1 --activate
       - name: Audit API runtime dependencies
-        run: pnpm --dir server audit --prod --audit-level high
+        id: api_audit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          pnpm --dir server audit --prod --audit-level high --json > "$RUNNER_TEMP/api-audit.json"
+          status=$?
+          set -e
+          node .github/scripts/summarize-audit.mjs "$RUNNER_TEMP/api-audit.json" api
+          exit "$status"
+      - name: Enforce dependency audit gate
+        if: always()
+        env:
+          APP_AUDIT_OUTCOME: ${{ steps.app_audit.outcome }}
+          API_AUDIT_OUTCOME: ${{ steps.api_audit.outcome }}
+        run: |
+          [[ "$APP_AUDIT_OUTCOME" == "success" ]] || { echo "App production dependency audit failed." >&2; exit 1; }
+          [[ "$API_AUDIT_OUTCOME" == "success" ]] || { echo "API production dependency audit failed." >&2; exit 1; }
