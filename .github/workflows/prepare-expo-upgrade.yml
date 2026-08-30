@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - .github/workflows/prepare-expo-upgrade.yml
+      - tsconfig.json
+      - app/**
+      - components/**
 
 concurrency:
   group: prepare-expo-sdk-57-security-upgrade
