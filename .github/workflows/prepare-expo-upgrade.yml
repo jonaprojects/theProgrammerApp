@@ -61,6 +61,10 @@ jobs:
             node .github/scripts/annotate-command-failure.mjs "$RUNNER_TEMP/expo-align.log" "Expo dependency alignment failed"
             exit "$status"
           fi
+      - name: Install required Reanimated worklets peer
+        run: node .github/scripts/run-checked.mjs "Worklets installation failed" npx expo install react-native-worklets --npm
+      - name: Migrate Expo SDK 57 application config
+        run: node .github/scripts/migrate-expo-57-config.mjs
       - name: Normalize generated npm lockfile
         run: |
           rm -rf node_modules package-lock.json
@@ -89,11 +93,11 @@ jobs:
       - name: Publish verified review branch
         shell: bash
         run: |
-          git diff --quiet -- .npmrc package.json package-lock.json && { echo "Expo reported no manifest changes." >&2; exit 1; }
+          git diff --quiet -- .npmrc app.json package.json package-lock.json && { echo "Expo reported no upgrade changes." >&2; exit 1; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$UPGRADE_BRANCH"
-          git add .npmrc package.json package-lock.json
+          git add .npmrc app.json package.json package-lock.json
           git commit -m "Upgrade Expo dependencies for security"
           git push origin "$UPGRADE_BRANCH"
           echo "### Verified dependency upgrade" >> "$GITHUB_STEP_SUMMARY"
