@@ -8,12 +8,20 @@ import HorizontalProgressBar from "../UI/horizontal_progress_bar/HorizontalProgr
 
 describe("shared accessibility foundations", () => {
   it("exposes headings and forwards live-region text props", () => {
-    const heading = renderer.create(
-      <H2 accessibilityLabel="כותרת נגישה">כותרת</H2>,
-    ).root.findByType(Text);
-    const status = renderer.create(
-      <P accessibilityRole="alert" accessibilityLiveRegion="polite">שגיאה</P>,
-    ).root.findByType(Text);
+    let headingRenderer: renderer.ReactTestRenderer;
+    let statusRenderer: renderer.ReactTestRenderer;
+
+    renderer.act(() => {
+      headingRenderer = renderer.create(
+        <H2 accessibilityLabel="כותרת נגישה">כותרת</H2>,
+      );
+      statusRenderer = renderer.create(
+        <P accessibilityRole="alert" accessibilityLiveRegion="polite">שגיאה</P>,
+      );
+    });
+
+    const heading = headingRenderer!.root.findByType(Text);
+    const status = statusRenderer!.root.findByType(Text);
 
     expect(heading.props.accessibilityRole).toBe("header");
     expect(heading.props.accessibilityLabel).toBe("כותרת נגישה");
@@ -22,7 +30,11 @@ describe("shared accessibility foundations", () => {
   });
 
   it("keeps primary actions large enough when text grows", () => {
-    const root = renderer.create(<PrimaryButton>המשך</PrimaryButton>).root;
+    let component: renderer.ReactTestRenderer;
+    renderer.act(() => {
+      component = renderer.create(<PrimaryButton>המשך</PrimaryButton>);
+    });
+    const root = component!.root;
     const button = root.findByType(Pressable);
     const buttonStyle = StyleSheet.flatten(button.props.style({ pressed: false }));
     const label = root.findAllByType(Text).at(-1);
@@ -35,9 +47,13 @@ describe("shared accessibility foundations", () => {
   });
 
   it("announces clamped progress values", () => {
-    const root = renderer.create(
-      <HorizontalProgressBar percentage={130} accessibilityLabel="התקדמות בקורס" />,
-    ).root;
+    let component: renderer.ReactTestRenderer;
+    renderer.act(() => {
+      component = renderer.create(
+        <HorizontalProgressBar percentage={130} accessibilityLabel="התקדמות בקורס" />,
+      );
+    });
+    const root = component!.root;
     const progress = root.findByProps({ accessibilityRole: "progressbar" });
 
     expect(progress.props.accessibilityLabel).toBe("התקדמות בקורס");
