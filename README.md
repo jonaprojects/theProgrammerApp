@@ -154,6 +154,15 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Production deployment
+
+The GitHub Actions production pipeline validates the app, API, content catalog,
+PostgreSQL migrations, readiness checks, and production Docker images. Releases
+from `main` are published as immutable GHCR images and can be deployed to a
+protected Docker host. See
+[`docs/production-deployment.md`](./docs/production-deployment.md) for the
+one-time GitHub/host setup, required secrets, release flow, and rollback rules.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:

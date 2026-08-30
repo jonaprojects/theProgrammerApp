@@ -2,6 +2,9 @@
   "name": "the-programmer",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=20 <23"
+  },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
@@ -17,7 +20,9 @@
     "backend:restore": "npm --prefix server run db:restore --",
     "test": "jest --watchAll",
     "test:ci": "jest --runInBand --watch=false",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "build:web": "expo export --platform web --output-dir dist"
   },
   "jest": {
     "preset": "jest-expo",

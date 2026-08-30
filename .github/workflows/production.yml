@@ -1,0 +1,246 @@
+name: Production pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  APP_NODE_VERSION: "20"
+  API_NODE_VERSION: "22"
+
+jobs:
+  app-quality:
+    name: App checks and web export
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.APP_NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:ci
+      - name: Export production web bundle
+        run: npm run build:web
+        env:
+          EXPO_PUBLIC_API_URL: https://api.example.invalid/api/v1
+
+  api-quality:
+    name: API checks, migrations, and readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: the_programmer_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d the_programmer_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/the_programmer_ci
+      DATABASE_SSL: "false"
+      CORS_ORIGIN: http://localhost:8081
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.API_NODE_VERSION }}
+      - name: Install pnpm
+        run: corepack enable && corepack prepare pnpm@10.15.1 --activate
+      - run: pnpm --dir server install --frozen-lockfile
+      - run: pnpm --dir server test
+      - run: pnpm --dir server content:validate
+      - name: Exercise the production database path
+        run: |
+          pnpm --dir server db:migrate
+          pnpm --dir server content:import
+      - name: Smoke-test API readiness
+        shell: bash
+        run: |
+          pnpm --dir server start > "$RUNNER_TEMP/api.log" 2>&1 &
+          api_pid=$!
+          trap 'kill "$api_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/health/ready >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/api.log"
+          exit 1
+
+  validate-images:
+    name: Validate production images
+    if: github.event_name == 'pull_request'
+    needs: [app-quality, api-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server/Dockerfile
+          push: false
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.web
+          push: false
+          build-args: EXPO_PUBLIC_API_URL=https://api.example.invalid/api/v1
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+  publish-images:
+    name: Publish immutable images
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [app-quality, api-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      api-image: ${{ steps.names.outputs.api-image }}
+      web-image: ${{ steps.names.outputs.web-image }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize image names
+        id: names
+        shell: bash
+        run: |
+          repository="${GITHUB_REPOSITORY,,}"
+          echo "api-image=ghcr.io/${repository}-api" >> "$GITHUB_OUTPUT"
+          echo "web-image=ghcr.io/${repository}-web" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.names.outputs.api-image }}:${{ github.sha }}
+            ${{ steps.names.outputs.api-image }}:latest
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Validate production API URL
+        shell: bash
+        env:
+          PRODUCTION_API_URL: ${{ vars.PRODUCTION_API_URL }}
+        run: |
+          case "$PRODUCTION_API_URL" in
+            https://*/api/v1) ;;
+            *) echo "Set PRODUCTION_API_URL to an HTTPS URL ending in /api/v1." >&2; exit 1 ;;
+          esac
+      - name: Publish web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.web
+          push: true
+          build-args: EXPO_PUBLIC_API_URL=${{ vars.PRODUCTION_API_URL }}
+          tags: |
+            ${{ steps.names.outputs.web-image }}:${{ github.sha }}
+            ${{ steps.names.outputs.web-image }}:latest
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+  deploy-production:
+    name: Deploy production
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.PRODUCTION_DEPLOY_ENABLED == 'true'
+    needs: publish-images
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: production-deployment
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_WEB_URL }}
+    env:
+      API_IMAGE: ${{ needs.publish-images.outputs.api-image }}
+      WEB_IMAGE: ${{ needs.publish-images.outputs.web-image }}
+      SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+      SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+      SSH_PORT: ${{ vars.PRODUCTION_SSH_PORT || '22' }}
+      SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
+      DEPLOY_PATH: ${{ vars.PRODUCTION_DEPLOY_PATH }}
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+      PRODUCTION_API_URL: ${{ vars.PRODUCTION_API_URL }}
+      PRODUCTION_WEB_URL: ${{ vars.PRODUCTION_WEB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          required=(SSH_HOST SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS DEPLOY_PATH GHCR_USERNAME GHCR_PULL_TOKEN PRODUCTION_API_URL PRODUCTION_WEB_URL)
+          for name in "${required[@]}"; do
+            if [[ -z "${!name}" ]]; then
+              echo "Missing production setting: $name" >&2
+              exit 1
+            fi
+          done
+          [[ "$DEPLOY_PATH" == /* ]] || { echo "PRODUCTION_DEPLOY_PATH must be absolute." >&2; exit 1; }
+      - name: Configure SSH
+        shell: bash
+        run: |
+          ssh_dir="$RUNNER_TEMP/production-ssh"
+          install -m 700 -d "$ssh_dir"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$ssh_dir/key"
+          chmod 600 "$ssh_dir/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          echo "SSH_DIR=$ssh_dir" >> "$GITHUB_ENV"
+      - name: Upload deployment definition
+        shell: bash
+        run: |
+          ssh_args=(-i "$SSH_DIR/key" -o UserKnownHostsFile="$SSH_DIR/known_hosts" -o StrictHostKeyChecking=yes -p "$SSH_PORT")
+          scp_args=(-i "$SSH_DIR/key" -o UserKnownHostsFile="$SSH_DIR/known_hosts" -o StrictHostKeyChecking=yes -P "$SSH_PORT")
+          ssh "${ssh_args[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p -- '$DEPLOY_PATH'"
+          scp "${scp_args[@]}" deploy/docker-compose.production.yml deploy/deploy.sh deploy/.env.production.example "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+      - name: Deploy immutable release
+        shell: bash
+        run: |
+          ssh_args=(-i "$SSH_DIR/key" -o UserKnownHostsFile="$SSH_DIR/known_hosts" -o StrictHostKeyChecking=yes -p "$SSH_PORT")
+          printf '%s' "$GHCR_PULL_TOKEN" | ssh "${ssh_args[@]}" "$SSH_USER@$SSH_HOST" "docker login ghcr.io --username '$GHCR_USERNAME' --password-stdin"
+          ssh "${ssh_args[@]}" "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && chmod 700 deploy.sh && ./deploy.sh '$GITHUB_SHA' '$API_IMAGE' '$WEB_IMAGE'"
+      - name: Verify public production endpoints
+        shell: bash
+        run: |
+          api_origin="${PRODUCTION_API_URL%/api/v1}"
+          curl --fail --show-error --retry 5 --retry-all-errors --retry-delay 3 "$api_origin/health/ready"
+          curl --fail --show-error --retry 5 --retry-all-errors --retry-delay 3 "$PRODUCTION_WEB_URL/health"

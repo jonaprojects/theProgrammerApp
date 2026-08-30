@@ -11,6 +11,8 @@ npm-debug.*
 *.orig.*
 web-build/
 server/backups/
+deploy/.env.production
+deploy/.deployed-image-tag
 
 # macOS
 .DS_Store

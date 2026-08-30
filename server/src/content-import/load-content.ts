@@ -17,7 +17,10 @@ import {
 import { parseQuestionCatalogFile, parseQuestionFile } from "./question-parser.js";
 import type { ContentBundle, ImportedLesson, ImportedTopic } from "./types.js";
 
-export const projectRoot = fileURLToPath(new URL("../../../", import.meta.url));
+const configuredContentRoot = process.env.CONTENT_ROOT?.trim();
+export const projectRoot = configuredContentRoot
+  ? resolve(configuredContentRoot)
+  : fileURLToPath(new URL("../../../", import.meta.url));
 
 export async function loadLegacyContent(root = projectRoot): Promise<ContentBundle> {
   const questionDirectory = resolve(root, "data", "questions");

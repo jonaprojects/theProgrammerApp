@@ -1,0 +1,16 @@
+.git
+.github
+.expo
+.pnpm-store
+.env
+.env.*
+node_modules
+server/node_modules
+server/dist
+server/.env
+server/.local-postgres
+server/backups
+dist
+tmp
+npm-debug.log*
+*.local
