@@ -1,6 +1,6 @@
 import * as React from "react";
 import renderer from "react-test-renderer";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 
 import { H2, P } from "../UI/typography/Typography";
 import PrimaryButton from "../UI/buttons/PrimaryButton";
@@ -35,7 +35,11 @@ describe("shared accessibility foundations", () => {
       component = renderer.create(<PrimaryButton>המשך</PrimaryButton>);
     });
     const root = component!.root;
-    const button = root.findByType(Pressable);
+    const button = root.find(
+      (node) =>
+        node.props.accessibilityRole === "button" &&
+        typeof node.props.style === "function",
+    );
     const buttonStyle = StyleSheet.flatten(button.props.style({ pressed: false }));
     const label = root.findAllByType(Text).at(-1);
     const labelStyle = StyleSheet.flatten(label?.props.style);
