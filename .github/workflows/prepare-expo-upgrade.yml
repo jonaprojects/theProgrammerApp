@@ -45,6 +45,8 @@ jobs:
           fi
       - name: Align Expo-managed dependencies
         shell: bash
+        env:
+          npm_config_legacy_peer_deps: "true"
         run: |
           set +e
           npx expo install --fix --npm > "$RUNNER_TEMP/expo-align.log" 2>&1
