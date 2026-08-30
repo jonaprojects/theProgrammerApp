@@ -63,6 +63,10 @@ jobs:
             node .github/scripts/annotate-command-failure.mjs "$RUNNER_TEMP/expo-align.log" "Expo dependency alignment failed"
             exit "$status"
           fi
+      - name: Normalize generated npm lockfile
+        env:
+          npm_config_legacy_peer_deps: "true"
+        run: node .github/scripts/run-checked.mjs "Lockfile normalization failed" npm install --package-lock-only
       - name: Verify a clean install
         run: node .github/scripts/run-checked.mjs "Strict npm install failed" npm ci
       - name: Run Expo compatibility diagnostics
