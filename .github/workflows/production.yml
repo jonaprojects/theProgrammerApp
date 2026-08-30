@@ -187,18 +187,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish API image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: server/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.names.outputs.api-image }}:${{ github.sha }}
-            ${{ steps.names.outputs.api-image }}:${{ github.sha }}-staging
-            ${{ steps.names.outputs.api-image }}:latest
-          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-          cache-from: type=gha,scope=api
-          cache-to: type=gha,mode=max,scope=api
+        shell: bash
+        env:
+          API_IMAGE: ${{ steps.names.outputs.api-image }}
+          IMAGE_SOURCE: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          node .github/scripts/run-checked.mjs "API image publication failed" \
+            docker buildx build \
+            --file server/Dockerfile \
+            --push \
+            --tag "${API_IMAGE}:${GITHUB_SHA}" \
+            --tag "${API_IMAGE}:${GITHUB_SHA}-staging" \
+            --tag "${API_IMAGE}:latest" \
+            --label "org.opencontainers.image.source=${IMAGE_SOURCE}" \
+            --cache-from type=gha,scope=api \
+            --cache-to type=gha,mode=max,scope=api \
+            .
       - name: Validate production API URL
         shell: bash
         env:
