@@ -2,6 +2,10 @@ name: Prepare Expo SDK 57 security upgrade
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/prepare-expo-upgrade.yml
 
 concurrency:
   group: prepare-expo-sdk-57-security-upgrade
