@@ -31,11 +31,30 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - name: Upgrade through Expo's compatibility resolver
+      - name: Install Expo SDK 57
         shell: bash
         run: |
-          npm install expo@~57.0.18
-          npx expo install --fix --npm
+          set +e
+          npm install expo@~57.0.18 > "$RUNNER_TEMP/expo-install.log" 2>&1
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/expo-install.log"
+          if (( status != 0 )); then
+            node .github/scripts/annotate-command-failure.mjs "$RUNNER_TEMP/expo-install.log" "Install Expo SDK 57 failed"
+            exit "$status"
+          fi
+      - name: Align Expo-managed dependencies
+        shell: bash
+        run: |
+          set +e
+          npx expo install --fix --npm > "$RUNNER_TEMP/expo-align.log" 2>&1
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/expo-align.log"
+          if (( status != 0 )); then
+            node .github/scripts/annotate-command-failure.mjs "$RUNNER_TEMP/expo-align.log" "Expo dependency alignment failed"
+            exit "$status"
+          fi
       - name: Verify a clean install
         run: npm ci
       - name: Run Expo compatibility diagnostics
