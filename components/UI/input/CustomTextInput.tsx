@@ -2,7 +2,7 @@ import { Colors } from "@/constants/Colors";
 import { TextInput, useColorScheme, type TextInputProps } from "react-native";
 
 export default function CustomTextInput(props: TextInputProps) {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() === "light" ? "light" : "dark";
 
   return (
     <TextInput

@@ -11,7 +11,7 @@ type ChipProps = {
 
 export default function Chip(props: ChipProps) {
   const [active, setActive] = useState(false);
-  const colorScheme = useColorScheme() ?? "dark";
+  const colorScheme = useColorScheme() === "light" ? "light" : "dark";
   const onPressHandler = () => {
     if (props.onPress) {
       props.onPress();

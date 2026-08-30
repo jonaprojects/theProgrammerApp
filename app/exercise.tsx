@@ -38,7 +38,7 @@ function getTopicParam(value: string | string[] | undefined): string | null {
 export default function Exercise() {
   const params = useLocalSearchParams<{ topic?: string | string[] }>();
   const topic = getTopicParam(params.topic);
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() === "light" ? "light" : "dark";
   const navigation = useNavigation();
   const { refresh: refreshProgress } = useProgress();
   const scrollRef = useRef<ScrollView>(null);

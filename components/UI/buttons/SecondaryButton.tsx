@@ -24,7 +24,7 @@ type PrimaryButtonProps = PropsWithChildren<{
 }>;
 
 export default function SecondaryButton(props: PrimaryButtonProps) {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() === "light" ? "light" : "dark";
 
   return (
     <ThemedPressable
