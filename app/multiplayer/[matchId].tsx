@@ -15,6 +15,10 @@ import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/context/AuthContext";
 import { useProgress } from "@/context/ProgressContext";
 import { api, createIdempotencyKey } from "@/services/api/client";
+import {
+  subscribeToMultiplayerMatch,
+  type MultiplayerTransportStatus,
+} from "@/services/api/multiplayerSocket";
 import type { ApiMultiplayerMatch, ApiMultiplayerPlayer } from "@/services/api/types";
 
 function param(value: string | string[] | undefined): string {
@@ -33,7 +37,7 @@ export default function MultiplayerMatchScreen() {
   const [starting, setStarting] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [leaveConfirmationVisible, setLeaveConfirmationVisible] = useState(false);
-  const [connectionWarning, setConnectionWarning] = useState(false);
+  const [transportStatus, setTransportStatus] = useState<MultiplayerTransportStatus>("connecting");
   const [actionError, setActionError] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const polling = useRef(false);
@@ -45,9 +49,8 @@ export default function MultiplayerMatchScreen() {
     try {
       const next = await api.getMultiplayerMatch(matchId);
       setMatch(next);
-      setConnectionWarning(false);
     } catch {
-      setConnectionWarning(true);
+      // The WebSocket may still recover; the slow HTTP fallback retries below.
     } finally {
       polling.current = false;
       setLoading(false);
@@ -56,10 +59,26 @@ export default function MultiplayerMatchScreen() {
 
   useEffect(() => { void refreshMatch(); }, [refreshMatch]);
   useEffect(() => {
+    if (!matchId) return;
+    return subscribeToMultiplayerMatch(matchId, {
+      onMatch: (nextMatch) => {
+        setMatch(nextMatch);
+        setLoading(false);
+      },
+      onStatus: setTransportStatus,
+      onError: (code) => {
+        if (code === "MATCH_UNAVAILABLE" || code === "FORBIDDEN") {
+          setActionError("המשחק כבר לא זמין.");
+        }
+      },
+    });
+  }, [matchId]);
+  useEffect(() => {
     if (match?.status !== "waiting" && match?.status !== "active") return;
-    const id = setInterval(() => { void refreshMatch(); }, 750);
+    if (transportStatus === "connected") return;
+    const id = setInterval(() => { void refreshMatch(); }, 5_000);
     return () => clearInterval(id);
-  }, [match?.status, refreshMatch]);
+  }, [match?.status, refreshMatch, transportStatus]);
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
@@ -136,7 +155,11 @@ export default function MultiplayerMatchScreen() {
   return (
     <Body>
       <Navbar />
-      {connectionWarning ? <P accessibilityLiveRegion="polite" style={styles.connectionWarning}>החיבור נקטע. מנסים להתחבר מחדש…</P> : null}
+      {transportStatus === "reconnecting" || transportStatus === "disconnected" ? (
+        <P accessibilityLiveRegion="polite" style={styles.connectionWarning}>
+          החיבור בזמן אמת נקטע. מנסים להתחבר מחדש…
+        </P>
+      ) : null}
       {match.status === "waiting" ? <WaitingRoom match={match} myUserId={user.id} starting={starting} error={actionError} onStart={startMatch} onLeave={() => setLeaveConfirmationVisible(true)} /> : null}
       {match.status === "active" ? (
         <ActiveMatch

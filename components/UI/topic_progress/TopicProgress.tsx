@@ -28,6 +28,8 @@ export default function TopicProgress(props: TopicProgressProps) {
       lightColor={Colors.light.cardBackgroundColor}
       style={[styles.container, props.style]}
       onPress={props.onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${props.topic}, ${props.questionsAnswered} מתוך ${props.totalNumOfQuestions} שאלות נענו, דיוק ${props.accuracyPercentage ?? 0} אחוז, שליטה ${props.masteryPercentage ?? 0} אחוז`}
     >
       <ThemedView style={styles.contentContainer}>
         <H4>{props.topic}</H4>
@@ -46,6 +48,7 @@ export default function TopicProgress(props: TopicProgressProps) {
         <CircularProgressBar
           completionRatio={props.questionsAnswered / props.totalNumOfQuestions}
           size={progressSize}
+          accessibilityLabel={`התקדמות בנושא ${props.topic}`}
         />
       </ThemedView>
     </ThemedPressable>

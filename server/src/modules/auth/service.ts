@@ -2,7 +2,13 @@ import type { Pool, PoolClient } from "pg";
 import { withTransaction } from "../../db/transaction.js";
 import { ConflictError, UnauthorizedError } from "../../shared/errors.js";
 import { hashPassword, verifyPassword } from "../../auth/password.js";
-import { createSessionToken, hashSessionToken, SESSION_DURATION_DAYS } from "../../auth/session.js";
+import {
+  createSessionToken,
+  hashSessionToken,
+  MAX_ACTIVE_SESSIONS,
+  SESSION_DURATION_DAYS,
+  SESSION_IDLE_TIMEOUT_DAYS,
+} from "../../auth/session.js";
 
 export interface AuthUser {
   id: string;
@@ -95,16 +101,44 @@ export class AuthService {
   }
 
   async logout(userId: string, sessionId: string): Promise<void> {
-    await this.database.query(
-      "UPDATE auth_sessions SET revoked_at = now() WHERE id = $1 AND user_id = $2",
-      [sessionId, userId],
-    );
+    await this.database.query(`
+      WITH revoked AS (
+        UPDATE auth_sessions SET revoked_at = now()
+        WHERE id = $1 AND user_id = $2
+        RETURNING id
+      )
+      UPDATE push_notification_devices
+      SET active = false, disabled_at = now()
+      WHERE auth_session_id IN (SELECT id FROM revoked)
+    `, [sessionId, userId]);
   }
 
   private async insertSession(database: Pool | PoolClient, userId: string, token: string): Promise<void> {
     await database.query(`
+      WITH revoked_expired AS (
+        UPDATE auth_sessions
+        SET revoked_at = now()
+        WHERE user_id = $1 AND revoked_at IS NULL
+          AND (expires_at <= now() OR last_seen_at <= now() - ($5 * interval '1 day'))
+      ),
+      overflow AS (
+        SELECT id FROM auth_sessions
+        WHERE user_id = $1 AND revoked_at IS NULL
+          AND expires_at > now() AND last_seen_at > now() - ($5 * interval '1 day')
+        ORDER BY last_seen_at DESC, created_at DESC
+        OFFSET $4
+      ),
+      revoked_overflow AS (
+        UPDATE auth_sessions SET revoked_at = now() WHERE id IN (SELECT id FROM overflow)
+      )
       INSERT INTO auth_sessions (user_id, token_hash, expires_at)
       VALUES ($1, $2, now() + ($3 * interval '1 day'))
-    `, [userId, hashSessionToken(token), SESSION_DURATION_DAYS]);
+    `, [
+      userId,
+      hashSessionToken(token),
+      SESSION_DURATION_DAYS,
+      MAX_ACTIVE_SESSIONS - 1,
+      SESSION_IDLE_TIMEOUT_DAYS,
+    ]);
   }
 }

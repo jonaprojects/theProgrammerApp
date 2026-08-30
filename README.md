@@ -36,12 +36,56 @@ attempts, hints, reveals, completion, lesson status, and one-time rewards follow
 the signed-in user across devices. Native session tokens are stored in encrypted
 Expo SecureStore; the web build uses browser storage.
 
+## Offline lesson access
+
+Lesson text, examples, and images are bundled with the application. After one
+successful signed-in load, the app also caches the course catalog, enrolled
+course tables of contents, profile, and progress state. A learner can therefore
+reopen the app, enter a saved course, and continue reading without the API or an
+internet connection.
+
+Opening or completing a lesson offline updates the local progress immediately.
+Those writes are compacted per lesson—`completed` always wins over
+`in_progress`—and synchronize automatically after connectivity returns. The UI
+shows an Offline banner and the number of pending changes. Server-validated
+interactive exercises remain read-only until reconnection, because correctness
+and point awards must not be trusted to the client.
+
+Offline data is namespaced by API and user. Logging out removes the cached
+profile, progress, and pending writes for that user. Catalog caches are refreshed
+on successful requests and use a versioned format so a future schema change can
+invalidate them safely. Network changes are observed with
+`@react-native-community/netinfo`; install a fresh native development build after
+adding that dependency if the existing build does not already contain it.
+
 Multiplayer exercises also require both processes. Open **תרגול → תרגול מול
 חברים** to create a private room, enter a room code, or use quick matchmaking.
 Matches support two authenticated players, timed multiple-choice and yes/no
 questions, reconnecting to an unfinished match, server-side scoring, forfeits,
 and final XP rewards. For an end-to-end backend check against the running API,
 run `npm --prefix server run test:multiplayer-smoke`.
+
+## Native Push notifications
+
+Push notifications are opt-in from the profile screen. They currently cover the
+events that benefit from leaving the app: an opponent joining a room and a match
+starting. The API stores device registrations per authenticated session, honors
+the user's multiplayer preference, checks Expo delivery receipts, and retires
+invalid tokens.
+
+Before testing on a real phone:
+
+1. Apply the latest database migration with `npm run backend:migrate`.
+2. Configure the app with EAS (`eas init`) so Expo provides
+   `extra.eas.projectId`, then configure Android FCM and/or Apple push credentials.
+3. Create and install a development build after adding `expo-notifications`;
+   changing a native plugin is not picked up by an already-installed build.
+4. Run the API and Expo in their usual two terminals, sign in on a physical
+   device, and choose **הפעלת התראות** in the profile.
+
+For a physical phone, `EXPO_PUBLIC_API_URL` must use the development computer's
+LAN address rather than `localhost`. If Expo push access-token security is
+enabled, set `EXPO_ACCESS_TOKEN` only in `server/.env`.
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 

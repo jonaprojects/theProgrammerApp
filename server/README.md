@@ -1,6 +1,6 @@
 # The Programmer API
 
-The backend is a standalone TypeScript service. PostgreSQL is the system of record; the Expo application communicates with it through the versioned HTTP API under `/api/v1`.
+The backend is a standalone TypeScript service. PostgreSQL is the system of record; the Expo application communicates through the versioned HTTP API and an authenticated multiplayer WebSocket under `/api/v1`.
 
 ## Structure
 
@@ -17,6 +17,7 @@ server/
 │   │   ├── courses/            Published course and lesson catalog
 │   │   ├── health/             Service/database health
 │   │   ├── multiplayer/        Two-player rooms, timed rounds, scoring, and rewards
+│   │   ├── notifications/      Push preferences, devices, delivery, and receipts
 │   │   ├── profiles/           Authenticated user profiles
 │   │   ├── progress/           Enrollments and user progress
 │   │   ├── questions/          Topics and safe question delivery
@@ -89,7 +90,11 @@ Curated catalog additions live in `../data/questions/catalogExpansion.ts` and `.
 
 | Method | Path | Authentication | Purpose |
 |---|---|---:|---|
-| `GET` | `/health` | No | Service and database health |
+| `GET` | `/health/live` | No | Process liveness without downstream checks |
+| `GET` | `/health/ready` | No | Readiness including PostgreSQL connectivity |
+| `GET` | `/health` | No | Backward-compatible readiness check |
+| `GET` | `/internal/metrics` | Monitoring token | Prometheus metrics; enabled only when configured |
+| `POST` | `/api/v1/client-errors` | Rate limited | Submit a sanitized app rendering failure |
 | `GET` | `/api/v1/courses` | No | Published course catalog |
 | `GET` | `/api/v1/courses/:slug` | No | Course with published lessons |
 | `GET` | `/api/v1/topics` | No | Exercise topics |
@@ -101,6 +106,10 @@ Curated catalog additions live in `../data/questions/catalogExpansion.ts` and `.
 | `GET` | `/api/v1/me/progress` | Yes | User, enrollment, and topic progress |
 | `GET` | `/api/v1/me/profile` | Yes | Read the current profile |
 | `PATCH` | `/api/v1/me/profile` | Yes | Update display name or biography |
+| `GET` | `/api/v1/me/notifications/preferences` | Yes | Read Push notification preferences |
+| `PATCH` | `/api/v1/me/notifications/preferences` | Yes | Update Push notification preferences |
+| `POST` | `/api/v1/me/notifications/devices` | Yes | Register or refresh an Expo Push token |
+| `POST` | `/api/v1/me/notifications/devices/deactivate` | Yes | Disable a device token |
 | `POST` | `/api/v1/me/enrollments` | Yes | Enroll in a published course |
 | `PUT` | `/api/v1/me/courses/:courseSlug/lessons/:lessonSlug/progress` | Yes | Persist lesson access or completion |
 | `POST` | `/api/v1/me/tutorial-exercises/:exerciseId/submissions` | Yes | Check or reveal a tutorial answer and persist its result |
@@ -112,6 +121,7 @@ Curated catalog additions live in `../data/questions/catalogExpansion.ts` and `.
 | `POST` | `/api/v1/multiplayer/matches/:matchId/start` | Yes | Start a full private room as its host |
 | `POST` | `/api/v1/multiplayer/matches/:matchId/answers` | Yes | Lock an answer idempotently for the current round |
 | `POST` | `/api/v1/multiplayer/matches/:matchId/leave` | Yes | Leave a waiting room or forfeit an active match |
+| `WS` | `/api/v1/multiplayer/matches/:matchId/socket` | First-frame session auth | Receive authoritative match and round state in real time |
 | `GET` | `/api/v1/leaderboards?period=weekly\|all_time` | Yes | Read ranked point totals and the current user's rank |
 | `GET` | `/api/v1/me/achievements` | Yes | Synchronize and read achievement progress |
 
@@ -153,9 +163,13 @@ Rewards are applied once even when clients reconnect or poll a finished match.
 
 One user cannot enter two live matches: matchmaking operations are serialized
 per user, and an overlapping request returns `409 ACTIVE_MATCH_EXISTS`.
-Clients synchronize through short authenticated polling, so reopening the app
-can restore the authoritative room, round, scores, and results without exposing
-answer keys early. Run `npm run test:multiplayer-smoke` while the API is running
+Clients synchronize through an authenticated WebSocket. The session token is sent
+in the first frame (`{"type":"authenticate","token":"…"}`), never in the URL;
+the server then pushes player-specific `match.state` frames. Round deadlines are
+scheduled on the server, sockets are heartbeat-checked, and clients reconnect with
+bounded exponential backoff. HTTP state reads remain as a five-second fallback
+during a socket outage, and reopening the app restores the authoritative room,
+round, scores, and results without exposing answer keys early. Run `npm run test:multiplayer-smoke` while the API is running
 to verify private rooms, quick matching, reconnection, concurrent creation,
 timeouts, all rounds, scoring, forfeits, results, and idempotent rewards.
 
@@ -179,8 +193,20 @@ rewards since the start of the current week; the all-time view uses each user's
 stored point total. Achievement reads synchronize permanent unlock records from
 the same learning data. Repeated reads are idempotent and do not award points.
 
+Push device registrations are tied to the authenticated session and are disabled
+on logout. Multiplayer events are delivered asynchronously through Expo Push, so
+an unavailable notification provider never blocks the match. The server stores
+Expo ticket IDs, checks receipts after the recommended delay, and disables tokens
+reported as `DeviceNotRegistered`. Set `EXPO_ACCESS_TOKEN` only when access-token
+security is enabled for the Expo project; never expose it through an
+`EXPO_PUBLIC_` variable.
+
 ## Production notes
 
+- Review the enforced controls and deployment checklist in
+  [`docs/security-hardening.md`](../docs/security-hardening.md).
+- Configure dashboards and alerts using
+  [`docs/monitoring-error-reporting.md`](../docs/monitoring-error-reporting.md).
 - Run migrations as a release step before starting the new server version.
 - Use a managed PostgreSQL instance and set `DATABASE_SSL=true` when its certificate chain is trusted by the runtime.
 - Keep `AUTH_MODE=session` for built-in email/password accounts, or set

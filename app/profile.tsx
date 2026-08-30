@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Linking, ScrollView, StyleSheet, Switch, View } from "react-native";
 import { useNavigation, useRouter } from "expo-router";
 import Body from "@/components/UI/Body";
 import Navbar from "@/components/UI/Navbar";
@@ -10,12 +10,14 @@ import SecondaryButton from "@/components/UI/buttons/SecondaryButton";
 import { H2, P, SecondaryText } from "@/components/UI/typography/Typography";
 import { useAuth } from "@/context/AuthContext";
 import { useProgress } from "@/context/ProgressContext";
+import { useNotifications } from "@/context/NotificationsContext";
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
   const router = useRouter();
   const { user, updateProfile, logout } = useAuth();
   const { progress, refresh } = useProgress();
+  const notifications = useNotifications();
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
   const [bio, setBio] = useState(user?.bio ?? "");
   const [saving, setSaving] = useState(false);
@@ -88,6 +90,55 @@ export default function ProfileScreen() {
               </SecondaryButton>
             </View>
           ) : null}
+          <View style={styles.notificationSection}>
+            <View style={styles.notificationHeading}>
+              <H2 style={styles.sectionTitle}>התראות</H2>
+              <SecondaryText style={styles.notificationDescription}>
+                קבלו עדכון קצר כשהיריב מצטרף או כשהמשחק מתחיל. אפשר לשנות את הבחירה בכל רגע.
+              </SecondaryText>
+            </View>
+            {!notifications.supported ? (
+              <View style={styles.notificationCard}>
+                <SecondaryText style={styles.notificationDescription}>
+                  התראות Push זמינות באפליקציה המותקנת ב-Android וב-iPhone, ולא בגרסת ה-Web הנוכחית.
+                </SecondaryText>
+              </View>
+            ) : notifications.loading ? (
+              <ActivityIndicator color="#00ADB5" accessibilityLabel="טוען הגדרות התראות" />
+            ) : (
+              <>
+                <View style={styles.notificationCard}>
+                  <View style={styles.preferenceCopy}>
+                    <P style={styles.preferenceTitle}>משחקים מול חברים</P>
+                    <SecondaryText style={styles.preferenceDescription}>יריב הצטרף או שהמשחק התחיל</SecondaryText>
+                  </View>
+                  <Switch
+                    accessibilityLabel="התראות על משחקים מול חברים"
+                    value={notifications.preferences.multiplayer}
+                    disabled={!notifications.preferences.enabled || notifications.busy}
+                    onValueChange={(value) => void notifications.updatePreference("multiplayer", value)}
+                    trackColor={{ false: "#4B5563", true: "#00ADB5" }}
+                    thumbColor="#FFFFFF"
+                  />
+                </View>
+                {notifications.error ? <P style={styles.notificationError}>{notifications.error}</P> : null}
+                {notifications.permission === "denied" ? (
+                  <SecondaryButton fill height={52} onPress={() => void Linking.openSettings()}>
+                    פתיחת הגדרות המכשיר
+                  </SecondaryButton>
+                ) : null}
+                {notifications.preferences.enabled && notifications.registered ? (
+                  <SecondaryButton fill height={52} disabled={notifications.busy} onPress={() => void notifications.disable()}>
+                    כיבוי התראות
+                  </SecondaryButton>
+                ) : (
+                  <PrimaryButton fill height={52} disabled={notifications.busy} onPress={() => void notifications.enable()}>
+                    {notifications.busy ? <ActivityIndicator color="#071A1D" /> : "הפעלת התראות"}
+                  </PrimaryButton>
+                )}
+              </>
+            )}
+          </View>
           <View style={styles.form}>
             <P>שם תצוגה</P>
             <CustomTextInput accessibilityLabel="שם תצוגה" value={displayName} onChangeText={setDisplayName} maxLength={80} style={styles.input} />
@@ -96,7 +147,7 @@ export default function ProfileScreen() {
             <SecondaryText style={styles.counter}>{bio.length}/240</SecondaryText>
             {message && <P style={styles.message}>{message}</P>}
             <PrimaryButton fill onPress={save} disabled={saving}>
-              {saving ? <ActivityIndicator color="#ffffff" /> : "שמירת שינויים"}
+              {saving ? <ActivityIndicator color="#071A1D" /> : "שמירת שינויים"}
             </PrimaryButton>
             <SecondaryButton fill onPress={logout}>התנתקות</SecondaryButton>
           </View>
@@ -125,6 +176,24 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   activityText: { textAlign: "right" },
+  notificationSection: { gap: 12 },
+  notificationHeading: { gap: 5 },
+  notificationDescription: { textAlign: "right", lineHeight: 22 },
+  notificationCard: {
+    minHeight: 72,
+    borderRadius: 10,
+    backgroundColor: "#293341",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 14,
+  },
+  preferenceCopy: { flex: 1, alignItems: "flex-end", gap: 2 },
+  preferenceTitle: { textAlign: "right", fontFamily: "Heebo_700Bold" },
+  preferenceDescription: { textAlign: "right", fontSize: 14 },
+  notificationError: { color: "#FFB4AB", textAlign: "right", fontSize: 15 },
   form: { gap: 12 },
   input: { minHeight: 52, paddingHorizontal: 14, textAlign: "right", writingDirection: "rtl" },
   bio: { minHeight: 120, paddingTop: 12, textAlignVertical: "top" },

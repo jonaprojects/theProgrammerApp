@@ -33,3 +33,11 @@ export class ConflictError extends ApiError {
     super(409, code, message);
   }
 }
+
+export class RateLimitError extends ApiError {
+  constructor(retryAfterSeconds: number) {
+    super(429, "RATE_LIMITED", "Too many requests. Please try again later", {
+      retryAfterSeconds,
+    });
+  }
+}

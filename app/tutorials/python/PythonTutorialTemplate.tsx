@@ -3,7 +3,6 @@ import TutorialTemplate from "../template/TutorialTemplate";
 import Container from "@/components/UI/Container";
 import { PropsWithChildren, useEffect, useState } from "react";
 import { router, usePathname } from "expo-router";
-import { api } from "@/services/api/client";
 import { pythonLessonSlugs } from "@/data/tutorials/python/lessonSlugs";
 import { useProgress } from "@/context/ProgressContext";
 
@@ -14,7 +13,7 @@ type PythonTutorialTemplate = PropsWithChildren<{
 }>;
 export default function PythonTutorialTemplate(props: PythonTutorialTemplate) {
   const pathname = usePathname();
-  const { progress, refresh: refreshProgress } = useProgress();
+  const { progress, recordLessonProgress } = useProgress();
   const [saving, setSaving] = useState(false);
   const [progressError, setProgressError] = useState<string | null>(null);
   const routeName = pathname.split("/").filter(Boolean).at(-1) ?? "";
@@ -22,10 +21,10 @@ export default function PythonTutorialTemplate(props: PythonTutorialTemplate) {
 
   useEffect(() => {
     if (!lessonSlug) return;
-    api.updateLessonProgress("python-basics", lessonSlug, "in_progress")
-      .then(() => refreshProgress())
+    recordLessonProgress("python-basics", lessonSlug, "in_progress")
+      .then(() => setProgressError(null))
       .catch(() => setProgressError("לא הצלחנו לשמור את ההתקדמות. בדקו את החיבור ונסו שוב."));
-  }, [lessonSlug, refreshProgress]);
+  }, [lessonSlug, recordLessonProgress]);
 
   const lessonProgress = progress?.enrollments
     .find(({ courseSlug }) => courseSlug === "python-basics")
@@ -36,8 +35,7 @@ export default function PythonTutorialTemplate(props: PythonTutorialTemplate) {
     setSaving(true);
     setProgressError(null);
     try {
-      await api.updateLessonProgress("python-basics", lessonSlug, "completed");
-      await refreshProgress();
+      await recordLessonProgress("python-basics", lessonSlug, "completed");
       return true;
     } catch {
       setProgressError("שמירת סיום השיעור נכשלה. נסו שוב.");

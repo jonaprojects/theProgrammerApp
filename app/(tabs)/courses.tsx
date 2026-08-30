@@ -7,12 +7,14 @@ import Navbar from "@/components/UI/Navbar";
 import { H1, H4, P } from "@/components/UI/typography/Typography";
 import { Colors } from "@/constants/Colors";
 import { api } from "@/services/api/client";
+import { offlineLearning } from "@/services/offline/learning";
 import { getCourseImage } from "@/services/api/assets";
 import type { ApiCourse } from "@/services/api/types";
 import { useProgress } from "@/context/ProgressContext";
+import OfflineNotice from "@/components/offline/OfflineNotice";
 
 export default function Courses() {
-  const { refresh: refreshProgress } = useProgress();
+  const { progress, isOffline, refresh: refreshProgress } = useProgress();
   const [courses, setCourses] = useState<ApiCourse[]>([]);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<string>>(new Set());
   const [enrollingId, setEnrollingId] = useState<string | null>(null);
@@ -23,14 +25,8 @@ export default function Courses() {
     setLoading(true);
     setError(false);
     try {
-      const [catalog, progress] = await Promise.all([
-        api.listCourses(),
-        api.getProgress(),
-      ]);
-      setCourses(catalog);
-      setEnrolledCourseIds(
-        new Set(progress.enrollments.map(({ courseId }) => courseId)),
-      );
+      const catalog = await offlineLearning.listCourses();
+      setCourses(catalog.data);
     } catch {
       setError(true);
     } finally {
@@ -42,7 +38,15 @@ export default function Courses() {
     load();
   }, []);
 
+  useEffect(() => {
+    setEnrolledCourseIds(new Set((progress?.enrollments ?? []).map(({ courseId }) => courseId)));
+  }, [progress]);
+
   const enroll = async (courseId: string) => {
+    if (isOffline) {
+      setError(true);
+      return;
+    }
     setEnrollingId(courseId);
     try {
       await api.enroll(courseId);
@@ -71,9 +75,12 @@ export default function Courses() {
             <View style={styles.header}>
               <H1>קורסים</H1>
               <H4>בשבילך</H4>
+              <OfflineNotice />
               {error ? (
                 <P style={styles.errorText}>
-                  חלק מהנתונים לא נטענו. ודאו שהשרת פועל ונסו שוב.
+                  {isOffline
+                    ? "הרשמה לקורס חדש דורשת חיבור לרשת. הקורסים שכבר נשמרו עדיין זמינים."
+                    : "חלק מהנתונים לא נטענו. ודאו שהשרת פועל ונסו שוב."}
                 </P>
               ) : null}
             </View>
@@ -90,7 +97,7 @@ export default function Courses() {
               courseID={item.id}
               enrolled={enrolledCourseIds.has(item.id)}
               enrolling={enrollingId === item.id}
-              onEnroll={() => enroll(item.id)}
+              onEnroll={() => void enroll(item.id)}
             />
           )}
           keyExtractor={({ id }) => id}

@@ -2,7 +2,6 @@ import { PropsWithChildren, useEffect, useState } from "react";
 import { router, usePathname } from "expo-router";
 
 import TutorialTemplate from "../template/TutorialTemplate";
-import { api } from "@/services/api/client";
 import { useProgress } from "@/context/ProgressContext";
 import { htmlLessons } from "@/data/tutorials/html/lessons";
 
@@ -14,7 +13,7 @@ type HtmlTutorialTemplateProps = PropsWithChildren<{
 
 export default function HtmlTutorialTemplate(props: HtmlTutorialTemplateProps) {
   const pathname = usePathname();
-  const { progress, refresh: refreshProgress } = useProgress();
+  const { progress, recordLessonProgress } = useProgress();
   const [saving, setSaving] = useState(false);
   const [progressError, setProgressError] = useState<string | null>(null);
   const routeName = pathname.split("/").filter(Boolean).at(-1) ?? "";
@@ -22,10 +21,10 @@ export default function HtmlTutorialTemplate(props: HtmlTutorialTemplateProps) {
 
   useEffect(() => {
     if (!lessonSlug) return;
-    api.updateLessonProgress("html-basics", lessonSlug, "in_progress")
-      .then(() => refreshProgress())
+    recordLessonProgress("html-basics", lessonSlug, "in_progress")
+      .then(() => setProgressError(null))
       .catch(() => setProgressError("לא הצלחנו לשמור את ההתקדמות. בדקו את החיבור ונסו שוב."));
-  }, [lessonSlug, refreshProgress]);
+  }, [lessonSlug, recordLessonProgress]);
 
   const lessonProgress = progress?.enrollments
     .find(({ courseSlug }) => courseSlug === "html-basics")
@@ -36,8 +35,7 @@ export default function HtmlTutorialTemplate(props: HtmlTutorialTemplateProps) {
     setSaving(true);
     setProgressError(null);
     try {
-      await api.updateLessonProgress("html-basics", lessonSlug, "completed");
-      await refreshProgress();
+      await recordLessonProgress("html-basics", lessonSlug, "completed");
       return true;
     } catch {
       setProgressError("שמירת סיום השיעור נכשלה. נסו שוב.");

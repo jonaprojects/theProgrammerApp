@@ -10,7 +10,7 @@ import { Colors } from "@/constants/Colors";
 import { useProgress } from "@/context/ProgressContext";
 import type { TableOfContentsModel } from "@/data/tutorials/models/tableOfContentsModel";
 import { htmlLessons } from "@/data/tutorials/html/lessons";
-import { api } from "@/services/api/client";
+import { offlineLearning } from "@/services/offline/learning";
 import TableOfContents from "../template/TableOfContents";
 
 const sectionTitles = ["מתחילים עם HTML", "תוכן וקישורים", "מבנה הדף", "טפסים", "דף איכותי ונגיש"];
@@ -24,8 +24,8 @@ export default function HtmlCourseTableOfContents() {
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
-    api.getCourse("html-basics")
-      .then((course) => {
+    offlineLearning.getCourse("html-basics")
+      .then(({ data: course }) => {
         const sections = sectionTitles.map((title) => ({ title, contents: {} as Record<string, string> }));
         for (const lesson of course.lessons) {
           if (lesson.slug in htmlLessons) sections[sectionIndex(lesson.position)]!.contents[lesson.title] = lesson.slug;

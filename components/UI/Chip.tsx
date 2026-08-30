@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Pressable, StyleProp, useColorScheme, ViewStyle } from "react-native";
-import { ThemedText } from "../ThemedText";
-import { ChipLabel, P } from "./typography/Typography";
+import { ChipLabel } from "./typography/Typography";
 import { Colors } from "@/constants/Colors";
 
 type ChipProps = {
@@ -27,6 +26,9 @@ export default function Chip(props: ChipProps) {
   return (
     <Pressable
       onPress={onPressHandler}
+      accessibilityRole="button"
+      accessibilityLabel={props.text}
+      accessibilityState={{ selected: active }}
       style={[
         {
           backgroundColor: chipBackgroundColor,
@@ -34,6 +36,8 @@ export default function Chip(props: ChipProps) {
           paddingVertical: 8,
           borderRadius: 16,
           alignSelf: "flex-start",
+          minHeight: 44,
+          justifyContent: "center",
         },
         props.style,
       ]}

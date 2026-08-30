@@ -36,7 +36,7 @@ export default function SecondaryButton(props: PrimaryButtonProps) {
       accessibilityRole="button"
       accessibilityState={{ disabled: props.disabled }}
       style={[{
-        height: props.height ?? 64,
+        minHeight: props.height ?? 64,
         width: props.fill ? "100%" : "auto",
         paddingHorizontal: props.paddingHorizontal ?? 16,
         justifyContent: "center",

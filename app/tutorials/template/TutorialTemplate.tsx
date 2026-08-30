@@ -7,6 +7,7 @@ import Container from "@/components/UI/Container";
 import NextPage from "@/components/tutorials/NextPage";
 import PrimaryButton from "@/components/UI/buttons/PrimaryButton";
 import { P } from "@/components/UI/typography/Typography";
+import OfflineNotice from "@/components/offline/OfflineNotice";
 
 type TutorialTemplateProps = PropsWithChildren<{
   headerBackgroundImg?: number;
@@ -38,6 +39,7 @@ export default function TutorialTemplate(props: TutorialTemplateProps) {
           myCoursesPath={props.myCoursesPath ?? "/my_courses"}
         />
         <Container style={styles.pageContent}>
+          <OfflineNotice />
           {props.children}
 
           {props.progressError ? <P style={styles.progressError}>{props.progressError}</P> : null}

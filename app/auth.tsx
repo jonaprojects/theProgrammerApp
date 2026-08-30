@@ -106,11 +106,16 @@ export default function AuthScreen() {
               />
               {error && <P accessibilityRole="alert" style={styles.error}>{error}</P>}
               <PrimaryButton fill onPress={submit} disabled={submitting}>
-                {submitting ? <ActivityIndicator color="#ffffff" /> : mode === "login" ? "התחברות" : "הרשמה"}
+                {submitting ? <ActivityIndicator color="#071A1D" /> : mode === "login" ? "התחברות" : "הרשמה"}
               </PrimaryButton>
             </View>
 
-            <Pressable onPress={switchMode} accessibilityRole="button" hitSlop={8}>
+            <Pressable
+              onPress={switchMode}
+              accessibilityRole="button"
+              hitSlop={8}
+              style={styles.switchButton}
+            >
               <P style={styles.switchText}>
                 {mode === "login" ? "אין לכם חשבון? הירשמו" : "כבר יש לכם חשבון? התחברו"}
               </P>
@@ -132,5 +137,6 @@ const styles = StyleSheet.create({
   rtlInput: { minHeight: 52, paddingHorizontal: 14, textAlign: "right", writingDirection: "rtl" },
   ltrInput: { minHeight: 52, paddingHorizontal: 14, textAlign: "left", writingDirection: "ltr" },
   error: { color: "#FF8A8A", fontSize: 15, lineHeight: 22, textAlign: "right" },
+  switchButton: { minHeight: 44, justifyContent: "center" },
   switchText: { color: Colors.dark.primary, textAlign: "center", fontFamily: "Heebo_700Bold" },
 });

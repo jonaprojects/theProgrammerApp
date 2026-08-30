@@ -9,7 +9,7 @@ import { P } from "@/components/UI/typography/Typography";
 import { Colors } from "@/constants/Colors";
 import type { TableOfContentsModel } from "@/data/tutorials/models/tableOfContentsModel";
 import { pythonRoutesByLessonSlug } from "@/data/tutorials/python/lessonSlugs";
-import { api } from "@/services/api/client";
+import { offlineLearning } from "@/services/offline/learning";
 import TableOfContents from "../template/TableOfContents";
 import { useProgress } from "@/context/ProgressContext";
 
@@ -35,9 +35,9 @@ export default function CourseTableOfContents() {
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
-    api
+    offlineLearning
       .getCourse("python-basics")
-      .then((course) => {
+      .then(({ data: course }) => {
         const sections = sectionTitles.map((title) => ({
           title,
           contents: {} as Record<string, string>,

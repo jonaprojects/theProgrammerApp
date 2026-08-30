@@ -10,7 +10,7 @@ import { P } from "@/components/UI/typography/Typography";
 import { Colors } from "@/constants/Colors";
 import { useProgress } from "@/context/ProgressContext";
 import type { TableOfContentsModel } from "@/data/tutorials/models/tableOfContentsModel";
-import { api } from "@/services/api/client";
+import { offlineLearning } from "@/services/offline/learning";
 
 type Props = {
   courseSlug: string;
@@ -29,7 +29,7 @@ export default function CatalogCourseTableOfContents(props: Props) {
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
-    api.getCourse(props.courseSlug).then((course) => {
+    offlineLearning.getCourse(props.courseSlug).then(({ data: course }) => {
       const sections = props.sectionTitles.map((title) => ({ title, contents: {} as Record<string, string> }));
       for (const lesson of course.lessons) {
         if (!props.lessonSlugs.has(lesson.slug)) continue;

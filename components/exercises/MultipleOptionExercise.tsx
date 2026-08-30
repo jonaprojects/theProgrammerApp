@@ -29,7 +29,11 @@ export default function MultipleOptionExercise(
       />
 
       <Container style={styles.optionsWrapper}>
-        <View style={styles.optionsContainer}>
+        <View
+          style={styles.optionsContainer}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="אפשרויות תשובה"
+        >
           {props.options.map((option, index) => (
             <Option
               key={option.id}

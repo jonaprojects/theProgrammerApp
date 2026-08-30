@@ -50,7 +50,7 @@ export default function InteractiveExercise({
 }: {
   exercise: TutorialExerciseDefinition;
 }) {
-  const { progress, loading: progressLoading, refresh: refreshProgress } = useProgress();
+  const { progress, loading: progressLoading, isOffline, refresh: refreshProgress } = useProgress();
   const [answer, setAnswer] = useState<TutorialExerciseAnswer>(() =>
     emptyExerciseAnswer(exercise),
   );
@@ -251,6 +251,12 @@ export default function InteractiveExercise({
             </P>
           ) : null}
 
+          {isOffline ? (
+            <P accessibilityLiveRegion="polite" style={styles.offlineExercise}>
+              אפשר להמשיך בשיעור במצב Offline. בדיקת התרגיל תחזור כשהחיבור יתחדש.
+            </P>
+          ) : null}
+
           <View style={styles.actions}>
             {status === "correct" || status === "revealed" ? (
               <SecondaryButton disabled={submitting} height={48} fill onPress={tryAgain} textStyle={styles.actionText}>
@@ -260,7 +266,7 @@ export default function InteractiveExercise({
               <PrimaryButton
                 height={48}
                 fill
-                disabled={!answerComplete || submitting}
+                disabled={!answerComplete || submitting || isOffline}
                 onPress={() => void checkAnswer()}
                 textStyle={styles.actionText}
               >
@@ -272,7 +278,7 @@ export default function InteractiveExercise({
               <SecondaryButton
                 height={48}
                 fill
-                disabled={submitting}
+                disabled={submitting || isOffline}
                 onPress={() => void revealAnswer()}
                 textStyle={styles.actionText}
               >
@@ -316,7 +322,11 @@ function MultiSelectInteraction({
       <SecondaryText style={styles.multiSelectInstruction}>
         אפשר לבחור יותר מתשובה אחת
       </SecondaryText>
-      <View accessibilityRole="list" style={styles.choiceList}>
+      <View
+        accessibilityRole="list"
+        accessibilityLabel="אפשרויות לבחירה מרובה"
+        style={styles.choiceList}
+      >
         {exercise.options.map((option) => {
           const selected = selectedOptionIds.includes(option.id);
           const correct = exercise.correctOptionIds.includes(option.id);
@@ -384,7 +394,11 @@ function MatchPairsInteraction({
         return (
           <View key={leftItem.id} style={styles.matchRow}>
             <H6 style={styles.matchTerm}>{leftItem.label}</H6>
-            <View style={styles.matchChoices}>
+            <View
+              style={styles.matchChoices}
+              accessibilityRole="radiogroup"
+              accessibilityLabel={`התאמה עבור ${leftItem.label}`}
+            >
               {exercise.rightItems.map((rightItem) => {
                 const selected = selectedRightId === rightItem.id;
                 const usedElsewhere = !selected && usedRightIds.includes(rightItem.id);
@@ -576,8 +590,10 @@ function OrderCodeInteraction({
           {order.length ? (
             <Pressable
               accessibilityLabel="איפוס סדר השורות"
+              accessibilityRole="button"
               onPress={() => onChange([])}
               hitSlop={8}
+              style={styles.resetButton}
             >
               <SecondaryText style={styles.resetText}>איפוס</SecondaryText>
             </Pressable>
@@ -601,6 +617,7 @@ function OrderCodeInteraction({
               return block ? (
                 <Pressable
                   accessibilityLabel={`הסרת שורה ${index + 1}: ${block.code}`}
+                  accessibilityRole="button"
                   key={`${blockId}-${index}`}
                   onPress={() => removeBlock(index)}
                   style={({ pressed }) => [styles.codeBlock, pressed && styles.pressed]}
@@ -631,6 +648,7 @@ function OrderCodeInteraction({
             {remaining.map((block) => (
               <Pressable
                 accessibilityLabel={`הוספת השורה: ${block.code}`}
+                accessibilityRole="button"
                 key={block.id}
                 onPress={() => addBlock(block.id)}
                 style={({ pressed }) => [styles.codeBlock, pressed && styles.pressed]}
@@ -787,7 +805,7 @@ const styles = StyleSheet.create({
   matchTerm: { textAlign: "right", color: "#DDFBFC" },
   matchChoices: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 8 },
   matchChoice: {
-    minHeight: 42,
+    minHeight: 44,
     maxWidth: "100%",
     paddingHorizontal: 12,
     paddingVertical: 9,
@@ -859,6 +877,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  resetButton: { minHeight: 44, justifyContent: "center" },
   resetText: { color: "#52F5FD", fontSize: 13 },
   orderTarget: {
     minHeight: 100,
@@ -896,7 +915,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#00ADB5",
   },
   orderNumberText: {
-    color: "#FFFFFF",
+    color: "#071A1D",
     fontFamily: "Heebo_700Bold",
     fontSize: 13,
   },
@@ -921,6 +940,7 @@ const styles = StyleSheet.create({
   },
   rewardText: { color: "#FDE68A" },
   submissionError: { color: "#FDA4AF", textAlign: "center" },
+  offlineExercise: { color: "#FDE68A", textAlign: "center", fontSize: 14 },
   actionText: { fontSize: 16 },
   pressed: { opacity: 0.72 },
 });

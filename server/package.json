@@ -11,7 +11,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsc -p tsconfig.json && node --test dist/app.test.js dist/auth/password.test.js dist/config/env.test.js dist/content-import/content-import.test.js dist/modules/attempts/service.test.js dist/modules/leaderboards/repository.test.js dist/modules/multiplayer/rules.test.js dist/modules/progress/repository.test.js dist/modules/questions/repository.test.js dist/modules/tutorial-exercises/service.test.js scripts/db-tools.test.mjs",
+    "test": "tsc -p tsconfig.json && node --test dist/app.test.js dist/auth/password.test.js dist/config/env.test.js dist/content-import/content-import.test.js dist/modules/attempts/service.test.js dist/modules/leaderboards/repository.test.js dist/modules/multiplayer/rules.test.js dist/modules/multiplayer/socket.test.js dist/modules/notifications/service.test.js dist/modules/progress/repository.test.js dist/modules/questions/repository.test.js dist/modules/tutorial-exercises/service.test.js dist/monitoring/error-reporter.test.js dist/monitoring/metrics.test.js dist/security/rate-limiter.test.js scripts/db-tools.test.mjs",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:backup": "node scripts/db-backup.mjs",
     "db:verify": "node scripts/db-verify.mjs",
@@ -25,11 +25,13 @@
     "@fastify/cors": "^11.1.0",
     "fastify": "^5.6.2",
     "pg": "^8.16.3",
+    "ws": "^8.21.3",
     "zod": "^4.1.5"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
     "@types/pg": "^8.15.5",
+    "@types/ws": "^8.18.1",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }

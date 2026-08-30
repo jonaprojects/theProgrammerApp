@@ -34,4 +34,20 @@ body {
   background-color: #202731;
   color-scheme: dark;
   scrollbar-color: #596677 #202731;
+}
+
+*:focus-visible {
+  outline: 3px solid #52F5FD !important;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }`;

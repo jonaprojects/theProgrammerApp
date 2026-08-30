@@ -28,6 +28,8 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { I18nManager } from "react-native";
 import { ProgressProvider } from "@/context/ProgressContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import AppErrorBoundary from "@/components/AppErrorBoundary";
+import { NotificationsProvider } from "@/context/NotificationsContext";
 I18nManager.forceRTL(false);
 I18nManager.allowRTL(false);
 
@@ -60,13 +62,17 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <AuthProvider>
-        <ProgressProvider>
-          <AuthenticatedNavigator />
-        </ProgressProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AppErrorBoundary>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <AuthProvider>
+          <NotificationsProvider>
+            <ProgressProvider>
+              <AuthenticatedNavigator />
+            </ProgressProvider>
+          </NotificationsProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </AppErrorBoundary>
   );
 }
 

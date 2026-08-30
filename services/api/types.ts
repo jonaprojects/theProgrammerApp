@@ -249,3 +249,9 @@ export type ApiAchievements = {
   totalCount: number;
   achievements: ApiAchievement[];
 };
+
+export type ApiNotificationPreferences = {
+  enabled: boolean;
+  multiplayer: boolean;
+  achievements: boolean;
+};

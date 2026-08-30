@@ -1,166 +1,208 @@
 import React from "react";
-import { type TextProps, StyleSheet } from "react-native";
+import { type TextProps, Platform, StyleSheet } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 
+const webHeadingLevel = (level: number): Record<string, number> =>
+  Platform.OS === "web" ? { "aria-level": level } : {};
+
 export function H1(props: TextProps) {
+  const { style, children, accessibilityRole = "header", ...rest } = props;
   return (
     <ThemedText
-      style={[styles.h1, props.style]}
+      {...rest}
+      {...webHeadingLevel(1)}
+      accessibilityRole={accessibilityRole}
+      style={[styles.h1, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function H2(props: TextProps) {
+  const { style, children, accessibilityRole = "header", ...rest } = props;
   return (
     <ThemedText
-      style={[styles.h2, props.style]}
+      {...rest}
+      {...webHeadingLevel(2)}
+      accessibilityRole={accessibilityRole}
+      style={[styles.h2, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function H3(props: TextProps) {
+  const { style, children, accessibilityRole = "header", ...rest } = props;
   return (
     <ThemedText
-      style={[styles.h3, props.style]}
+      {...rest}
+      {...webHeadingLevel(3)}
+      accessibilityRole={accessibilityRole}
+      style={[styles.h3, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function H4(props: TextProps) {
+  const { style, children, accessibilityRole = "header", ...rest } = props;
   return (
     <ThemedText
-      style={[styles.h4, props.style]}
+      {...rest}
+      {...webHeadingLevel(4)}
+      accessibilityRole={accessibilityRole}
+      style={[styles.h4, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function H5(props: TextProps) {
+  const { style, children, accessibilityRole = "header", ...rest } = props;
   return (
     <ThemedText
-      style={[styles.h5, props.style]}
+      {...rest}
+      {...webHeadingLevel(5)}
+      accessibilityRole={accessibilityRole}
+      style={[styles.h5, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function H6(props: TextProps) {
+  const { style, children, accessibilityRole = "header", ...rest } = props;
   return (
     <ThemedText
-      style={[styles.h6, props.style]}
+      {...rest}
+      {...webHeadingLevel(6)}
+      accessibilityRole={accessibilityRole}
+      style={[styles.h6, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function P(props: TextProps) {
+  const { style, children, ...rest } = props;
   return (
     <ThemedText
-      style={[styles.p, props.style]}
+      {...rest}
+      style={[styles.p, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function Label(props: TextProps) {
+  const { style, children, ...rest } = props;
   return (
     <ThemedText
-      style={[styles.label, props.style]}
+      {...rest}
+      style={[styles.label, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function SecondaryText(props: TextProps) {
+  const { style, children, ...rest } = props;
   return (
     <ThemedText
-      style={[styles.secondary, props.style]}
+      {...rest}
+      style={[styles.secondary, style]}
       lightColor={Colors.light.secondaryText}
       darkColor={Colors.dark.secondaryText}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function ChipLabel(props: TextProps) {
+  const { style, children, ...rest } = props;
   return (
     <ThemedText
-      style={[styles.chipLabel, props.style]}
+      {...rest}
+      style={[styles.chipLabel, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function TaskTitle(props: TextProps) {
+  const { style, children, ...rest } = props;
   return (
     <ThemedText
-      style={[styles.chipLabel, props.style]}
+      {...rest}
+      style={[styles.taskTitle, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function CourseCardTitle(props: TextProps) {
+  const { style, children, ...rest } = props;
   return (
     <ThemedText
-      style={[styles.courseCardTitle, props.style]}
+      {...rest}
+      style={[styles.courseCardTitle, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function OptionText(props: TextProps) {
+  const { style, children, ...rest } = props;
   return (
     <ThemedText
-      style={[styles.exerciseOption, props.style]}
+      {...rest}
+      style={[styles.exerciseOption, style]}
       lightColor={Colors.light.text}
       darkColor={Colors.dark.text}
     >
-      {props.children}
+      {children}
     </ThemedText>
   );
 }
 
 export function TutorialH4(props: TextProps) {
-  return <H4 style={[styles.tutorialH4, props.style]}>{props.children}</H4>;
+  const { style, children, ...rest } = props;
+  return <H4 {...rest} style={[styles.tutorialH4, style]}>{children}</H4>;
 }
 
 const styles = StyleSheet.create({

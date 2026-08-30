@@ -5,7 +5,6 @@ import TutorialTemplate from "@/app/tutorials/template/TutorialTemplate";
 import CodeSnippet from "@/components/UI/code_snippets/CodeSnippet";
 import { P, TutorialH4 as H4 } from "@/components/UI/typography/Typography";
 import { useProgress } from "@/context/ProgressContext";
-import { api } from "@/services/api/client";
 import InteractiveExercise from "./exercises/InteractiveExercise";
 import type { TutorialLessonContent } from "./PythonLessonPage";
 import Section from "./Section";
@@ -22,7 +21,7 @@ type Props = {
 export default function CatalogLessonPage(props: Props) {
   const navigation = useNavigation();
   const pathname = usePathname();
-  const { progress, refresh } = useProgress();
+  const { progress, recordLessonProgress } = useProgress();
   const [saving, setSaving] = useState(false);
   const [progressError, setProgressError] = useState<string | null>(null);
   const routeName = pathname.split("/").filter(Boolean).at(-1) ?? "";
@@ -32,10 +31,10 @@ export default function CatalogLessonPage(props: Props) {
 
   useEffect(() => {
     if (!lessonSlug) return;
-    api.updateLessonProgress(props.courseSlug, lessonSlug, "in_progress")
-      .then(() => refresh())
+    recordLessonProgress(props.courseSlug, lessonSlug, "in_progress")
+      .then(() => setProgressError(null))
       .catch(() => setProgressError("לא הצלחנו לשמור את ההתקדמות. בדקו את החיבור ונסו שוב."));
-  }, [lessonSlug, props.courseSlug, refresh]);
+  }, [lessonSlug, props.courseSlug, recordLessonProgress]);
 
   const lessonProgress = progress?.enrollments
     .find(({ courseSlug }) => courseSlug === props.courseSlug)
@@ -46,8 +45,7 @@ export default function CatalogLessonPage(props: Props) {
     setSaving(true);
     setProgressError(null);
     try {
-      await api.updateLessonProgress(props.courseSlug, lessonSlug, "completed");
-      await refresh();
+      await recordLessonProgress(props.courseSlug, lessonSlug, "completed");
       return true;
     } catch {
       setProgressError("שמירת סיום השיעור נכשלה. נסו שוב.");

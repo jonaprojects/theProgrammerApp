@@ -34,7 +34,7 @@ export default function PrimaryButton(props: PrimaryButtonProps) {
       accessibilityState={{ disabled: props.disabled }}
       style={[
         {
-          height: props.height ?? 64,
+          minHeight: props.height ?? 64,
           width: props.fill ? "100%" : "auto",
           paddingHorizontal: props.paddingHorizontal ?? 16,
           justifyContent: "center",
@@ -46,8 +46,8 @@ export default function PrimaryButton(props: PrimaryButtonProps) {
       ]}
     >
       <ThemedText
-        lightColor={Colors.light.text}
-        darkColor={Colors.dark.text}
+        lightColor="#071A1D"
+        darkColor="#071A1D"
         style={{
           fontFamily: props.textStyle?.fontFamily ?? "Heebo_700Bold",
           fontSize: props.textStyle?.fontSize ?? 20,
@@ -62,7 +62,7 @@ export default function PrimaryButton(props: PrimaryButtonProps) {
 export function SmallPrimaryButton(props: PrimaryButtonProps) {
   return (
     <PrimaryButton
-      style={[props.style, { height: 40 }]}
+      style={[props.style, { minHeight: 44 }]}
       onPress={props.onPress}
       textStyle={{
         fontSize: 16,

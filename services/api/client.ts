@@ -17,6 +17,7 @@ import type {
   ApiLeaderboard,
   ApiLeaderboardPeriod,
   ApiAchievements,
+  ApiNotificationPreferences,
 } from "./types";
 
 const configuredUrl = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -94,6 +95,11 @@ export function onSessionUnauthorized(listener: () => void): () => void {
   return () => { unauthorizedListeners.delete(listener); };
 }
 
+export async function invalidateSession(): Promise<void> {
+  await setSessionToken(null);
+  unauthorizedListeners.forEach((listener) => listener());
+}
+
 async function authenticatedRequest<T>(
   path: string,
   init: RequestInit = {},
@@ -107,8 +113,7 @@ async function authenticatedRequest<T>(
     });
   } catch (error) {
     if (error instanceof ApiRequestError && error.status === 401) {
-      await setSessionToken(null);
-      unauthorizedListeners.forEach((listener) => listener());
+      await invalidateSession();
     }
     throw error;
   }
@@ -125,12 +130,44 @@ export const api = {
       method: "POST",
       body: JSON.stringify(input),
     }),
+  reportClientError: (input: {
+    message: string;
+    stack?: string;
+    componentStack?: string;
+    route: string;
+    platform: "android" | "ios" | "web" | "unknown";
+    appVersion: string;
+    clientEventId: string;
+  }) => request<{ eventId: string }>("/client-errors", {
+    method: "POST",
+    body: JSON.stringify(input),
+  }),
   logout: () => authenticatedRequest<void>("/auth/logout", { method: "POST" }),
   getProfile: () => authenticatedRequest<ApiUserProfile>("/me/profile"),
   updateProfile: (input: { displayName?: string; bio?: string }) =>
     authenticatedRequest<ApiUserProfile>("/me/profile", {
       method: "PATCH",
       body: JSON.stringify(input),
+    }),
+  getNotificationPreferences: () =>
+    authenticatedRequest<ApiNotificationPreferences>("/me/notifications/preferences"),
+  updateNotificationPreferences: (input: Partial<ApiNotificationPreferences>) =>
+    authenticatedRequest<ApiNotificationPreferences>("/me/notifications/preferences", {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    }),
+  registerPushDevice: (input: {
+    token: string;
+    platform: "android" | "ios";
+    deviceName?: string;
+  }) => authenticatedRequest<void>("/me/notifications/devices", {
+    method: "POST",
+    body: JSON.stringify(input),
+  }),
+  deactivatePushDevice: (token: string) =>
+    authenticatedRequest<void>("/me/notifications/devices/deactivate", {
+      method: "POST",
+      body: JSON.stringify({ token }),
     }),
   listCourses: () => request<ApiCourse[]>("/courses"),
   getCourse: (slug: string) =>

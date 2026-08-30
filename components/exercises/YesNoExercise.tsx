@@ -32,7 +32,11 @@ export default function YesNoExercise(props: YesNoExerciseProps) {
         lightColor={Colors.light.cardBackgroundColor}
         style={styles.exerciseContainer}
       >
-        <View style={styles.optionsContainer}>
+        <View
+          style={styles.optionsContainer}
+          accessibilityRole="radiogroup"
+          accessibilityLabel="אפשרויות תשובה"
+        >
           {props.options.map((option) => (
             <YesNoButton
               key={option.id}

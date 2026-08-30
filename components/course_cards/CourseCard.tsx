@@ -1,14 +1,12 @@
-import { CourseCardTitle, P } from "@/components/UI/typography/Typography";
+import { CourseCardTitle } from "@/components/UI/typography/Typography";
 import React, { PropsWithChildren } from "react";
 import {
-  Pressable,
   ImageBackground,
   StyleSheet,
   View,
   StyleProp,
   ViewStyle,
 } from "react-native";
-import PrimaryButton from "../UI/buttons/PrimaryButton";
 import { Image } from "expo-image";
 
 type CourseCardProps = PropsWithChildren<{
@@ -25,22 +23,24 @@ export default function CourseCard(props: CourseCardProps) {
       resizeMode="cover"
       style={[styles.backgroundImage, props.style]}
     >
-      <Pressable style={styles.card}>
+      <View style={styles.card}>
         <View style={styles.cardHeader}>
           <View style={styles.toolkit}>
             <Image
               source={require("@/assets/images/icons/favorite.svg")}
               style={styles.icon}
+              accessible={false}
             />
             <Image
               source={require("@/assets/images/icons/info.svg")}
               style={styles.icon}
+              accessible={false}
             />
           </View>
           <CourseCardTitle>{props.courseName}</CourseCardTitle>
         </View>
         <View>{props.children}</View>
-      </Pressable>
+      </View>
     </ImageBackground>
   );
 }

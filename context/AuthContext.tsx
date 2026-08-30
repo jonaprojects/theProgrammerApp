@@ -1,6 +1,8 @@
 import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
-import { api, getSessionToken, onSessionUnauthorized, setSessionToken } from "@/services/api/client";
+import { ApiRequestError, api, getSessionToken, onSessionUnauthorized, setSessionToken } from "@/services/api/client";
 import type { ApiUserProfile } from "@/services/api/types";
+import { clearCachedProfile, readCachedProfile, writeCachedProfile } from "@/services/offline/profileCache";
+import { offlineLearning } from "@/services/offline/learning";
 
 type Credentials = { email: string; password: string };
 type Registration = Credentials & { displayName: string };
@@ -21,6 +23,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<ApiUserProfile | null>(null);
 
   useEffect(() => onSessionUnauthorized(() => {
+    void clearCachedProfile();
     setUser(null);
     setStatus("unauthenticated");
   }), []);
@@ -28,7 +31,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     let active = true;
     getSessionToken()
-      .then(async (token) => token ? api.getProfile() : null)
+      .then(async (token) => {
+        if (!token) return null;
+        try {
+          const profile = await api.getProfile();
+          await writeCachedProfile(profile);
+          return profile;
+        } catch (error) {
+          if (error instanceof ApiRequestError && error.status < 500 && error.status !== 429) throw error;
+          const cached = await readCachedProfile();
+          if (cached) return cached;
+          throw error;
+        }
+      })
       .then((profile) => {
         if (!active) return;
         setUser(profile);
@@ -46,6 +61,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const acceptSession = useCallback(async (result: { token: string; user: ApiUserProfile }) => {
     await setSessionToken(result.token);
+    await writeCachedProfile(result.user);
     setUser(result.user);
     setStatus("authenticated");
   }, []);
@@ -54,13 +70,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const register = useCallback(async (input: Registration) => acceptSession(await api.register(input)), [acceptSession]);
   const logout = useCallback(async () => {
     try { await api.logout(); } finally {
+      if (user) await offlineLearning.clearUserData(user.id);
+      await clearCachedProfile();
       await setSessionToken(null);
       setUser(null);
       setStatus("unauthenticated");
     }
-  }, []);
+  }, [user]);
   const updateProfile = useCallback(async (input: { displayName?: string; bio?: string }) => {
     const profile = await api.updateProfile(input);
+    await writeCachedProfile(profile);
     setUser(profile);
     return profile;
   }, []);

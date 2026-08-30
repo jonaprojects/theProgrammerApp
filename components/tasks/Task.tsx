@@ -1,12 +1,12 @@
 import React from "react";
 import {
-  Pressable,
   StyleProp,
   StyleSheet,
   View,
   ViewStyle,
 } from "react-native";
 import { ThemedView } from "../ThemedView";
+import { ThemedPressable } from "../ThemedPressable";
 import { Colors } from "@/constants/Colors";
 import { P, TaskTitle } from "../UI/typography/Typography";
 import HorizontalProgressBar from "../UI/horizontal_progress_bar/HorizontalProgressBar";
@@ -30,10 +30,13 @@ export default function Task(props: TaskProps) {
     : Colors["light"].uncompletedTask;
 
   return (
-    <ThemedView
+    <ThemedPressable
       darkColor={darkColor}
       lightColor={lightColor}
       style={[styles.container, props.style]}
+      onPress={props.onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${props.name}, ${props.progress} אחוז הושלמו`}
     >
       <View
         style={{
@@ -43,20 +46,20 @@ export default function Task(props: TaskProps) {
           alignItems: "center",
         }}
       >
-        <View>
-          <Pressable>
+        <View accessible={false} importantForAccessibility="no-hide-descendants">
             {props.isCompleted ? (
               <Image
                 source={require("@/assets/images/icons/trophy.svg")}
                 style={styles.trophyIcon}
+                accessible={false}
               />
             ) : (
               <Image
                 source={require("@/assets/images/icons/arrowOut.svg")}
                 style={styles.arrowIcon}
+                accessible={false}
               />
             )}
-          </Pressable>
         </View>
         <View style={styles.contentContainer}>
           <TaskTitle>{props.name}</TaskTitle>
@@ -68,7 +71,7 @@ export default function Task(props: TaskProps) {
           </View>
         </View>
       </View>
-    </ThemedView>
+    </ThemedPressable>
   );
 }
 
@@ -76,6 +79,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     borderRadius: 8,
+    minHeight: 44,
   },
   progressContainer: {
     width: "75%",

@@ -141,7 +141,7 @@ export default function LeaderboardScreen() {
             <View style={styles.stateBox}>
               <Ionicons name="cloud-offline-outline" size={38} color="#9BA1A6" />
               <H5>לא הצלחנו לטעון את הנתונים</H5>
-              <Pressable accessibilityRole="button" onPress={() => void load()} style={styles.retryButton}><H6>ניסיון נוסף</H6></Pressable>
+              <Pressable accessibilityRole="button" onPress={() => void load()} style={styles.retryButton}><H6 style={styles.primaryActionText}>ניסיון נוסף</H6></Pressable>
             </View>
           ) : (
             <>
@@ -207,7 +207,8 @@ const styles = StyleSheet.create({
   segment: { flex: 1, minHeight: 44, alignItems: "center", justifyContent: "center", borderRadius: 9 },
   activeSegment: { backgroundColor: Colors.dark.primary },
   segmentText: { color: "#AEB5BE", fontFamily: "Heebo_700Bold", fontSize: 15 },
-  activeSegmentText: { color: "#FFFFFF" },
+  activeSegmentText: { color: "#071A1D" },
+  primaryActionText: { color: "#071A1D" },
   list: { gap: 8 },
   rankRow: { minHeight: 70, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: "#293341", borderRadius: 12, flexDirection: "row-reverse", alignItems: "center", justifyContent: "space-between", borderWidth: 1, borderColor: "transparent" },
   myRankRow: { borderColor: Colors.dark.primary, backgroundColor: "#203A42" },

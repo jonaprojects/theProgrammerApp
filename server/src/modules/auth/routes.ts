@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { Authenticate } from "../../auth/authenticator.js";
 import { UnauthorizedError } from "../../shared/errors.js";
 import { AuthService } from "./service.js";
+import type { FastifyReply, FastifyRequest } from "fastify";
 
 const email = z.string().trim().toLowerCase().email().max(254);
 const password = z.string().min(8).max(128);
@@ -14,15 +15,25 @@ const registerSchema = z.object({
 });
 const loginSchema = z.object({ email, password });
 
-export function registerAuthRoutes(app: FastifyInstance, database: Pool, authenticate: Authenticate): void {
+type AuthRateLimit = (scope: "login" | "register") => (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => Promise<void>;
+
+export function registerAuthRoutes(
+  app: FastifyInstance,
+  database: Pool,
+  authenticate: Authenticate,
+  rateLimit: AuthRateLimit,
+): void {
   const auth = new AuthService(database);
 
-  app.post("/auth/register", async (request, reply) => {
+  app.post("/auth/register", { preHandler: rateLimit("register") }, async (request, reply) => {
     const result = await auth.register(registerSchema.parse(request.body));
     return reply.code(201).send({ data: result });
   });
 
-  app.post("/auth/login", async (request) => ({
+  app.post("/auth/login", { preHandler: rateLimit("login") }, async (request) => ({
     data: await auth.login(loginSchema.parse(request.body)),
   }));
 

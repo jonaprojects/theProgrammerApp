@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   cardHeadingRow: { flexDirection: "row-reverse", alignItems: "center", justifyContent: "flex-start", gap: 8 },
   chipsRow: { flexDirection: "row-reverse", gap: 8, paddingVertical: 2 },
   compactChips: { flexDirection: "row-reverse", gap: 8, flexWrap: "wrap" },
-  chip: { minHeight: 42, paddingHorizontal: 16, borderRadius: 21, borderWidth: 1, borderColor: "#536071", backgroundColor: "#1B222C", justifyContent: "center" },
+  chip: { minHeight: 44, paddingHorizontal: 16, borderRadius: 22, borderWidth: 1, borderColor: "#536071", backgroundColor: "#1B222C", justifyContent: "center" },
   selectedChip: { borderColor: Colors.dark.primary, backgroundColor: "#0B4A50" },
   chipText: { lineHeight: 21, textAlign: "center" },
   selectedChipText: { color: "#75F7FD", fontFamily: "Heebo_700Bold" },

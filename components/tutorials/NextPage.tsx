@@ -20,6 +20,8 @@ export default function NextPage(props: NextPageProps) {
     <Pressable
       style={[styles.container, props.style]}
       onPress={props.onNextPage}
+      accessibilityRole="button"
+      accessibilityLabel={`עבור לפרק הבא: ${props.nextPageTitle}`}
     >
       <LinearGradient
         // Colors for the gradient
@@ -34,6 +36,7 @@ export default function NextPage(props: NextPageProps) {
             <Image
               source={require("@/assets/images/icons/next.svg")}
               style={{ width: 32, height: 32 }}
+              accessible={false}
             />
           </View>
           <View style={styles.details}>
@@ -54,6 +57,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#00ADB5",
     alignSelf: "flex-end",
+    minHeight: 44,
   },
   gradient: {
     width: "100%",

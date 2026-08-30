@@ -7,6 +7,7 @@ import { TableOfContentsModel } from "@/data/tutorials/models/tableOfContentsMod
 import CourseHeader from "./CourseHeader";
 import Navbar from "@/components/UI/Navbar";
 import CourseNavigationBar from "./CourseNavigationBar";
+import OfflineNotice from "@/components/offline/OfflineNotice";
 
 type TableOfContentsProps = {
   data: TableOfContentsModel;
@@ -24,6 +25,7 @@ export default function TableOfContents(props: TableOfContentsProps) {
           <CourseNavigationBar backFallbackPath="/my_courses" />
         </CourseHeader>
         <Container style={styles.pageContent}>
+          <OfflineNotice />
           <View style={{ padding: 5 }}>
             {props.data.map((section, index) => {
               return (

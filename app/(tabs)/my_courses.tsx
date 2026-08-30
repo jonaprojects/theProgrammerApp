@@ -11,6 +11,7 @@ import { courseLessonPath, courseTableOfContentsPath } from "@/data/tutorials/co
 import { getCourseImage } from "@/services/api/assets";
 import type { ApiEnrollmentProgress } from "@/services/api/types";
 import { useProgress } from "@/context/ProgressContext";
+import OfflineNotice from "@/components/offline/OfflineNotice";
 
 function openCourse(enrollment: ApiEnrollmentProgress) {
   if (enrollment.resumeLesson) {
@@ -42,7 +43,7 @@ export default function MyCourses() {
           data={enrollments}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          ListHeaderComponent={<H1 style={styles.heading}>הקורסים שלי</H1>}
+          ListHeaderComponent={<View><H1 style={styles.heading}>הקורסים שלי</H1><OfflineNotice /></View>}
           ListEmptyComponent={
             <P style={styles.emptyText}>
               {error ? "לא הצלחנו לטעון את ההתקדמות מהשרת." : "עדיין לא נרשמתם לקורס."}

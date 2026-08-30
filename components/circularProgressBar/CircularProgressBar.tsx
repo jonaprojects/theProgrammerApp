@@ -18,13 +18,16 @@ function decimalToPercentage(decimal: number) {
 type CircularProgressBarProps = {
   completionRatio: number;
   size?: number;
+  accessibilityLabel?: string;
 };
 
 export default function CircularProgressBar({
   completionRatio,
   size = 180,
+  accessibilityLabel = "התקדמות",
 }: CircularProgressBarProps) {
-  const percent = decimalToPercentage(completionRatio);
+  const clampedRatio = Math.min(1, Math.max(0, completionRatio || 0));
+  const percent = decimalToPercentage(clampedRatio);
   const strokeWidth = Math.max(12, Math.round(size * 0.075));
   const radius = (size - strokeWidth) / 2;
   const circleLength = 2 * Math.PI * radius;
@@ -39,11 +42,18 @@ export default function CircularProgressBar({
 
   // Trigger animation when the component mounts
   useEffect(() => {
-    animatedProgress.value = withTiming(completionRatio, { duration: 1000 });
-  }, [completionRatio]);
+    animatedProgress.value = withTiming(clampedRatio, { duration: 1000 });
+  }, [clampedRatio]);
 
   return (
-    <View style={[styles.progressBarContainer, { width: size, height: size }]}>
+    <View
+      style={[styles.progressBarContainer, { width: size, height: size }]}
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityValue={{ min: 0, max: 100, now: Number(percent), text: `${percent}%` }}
+    >
+      <View accessible={false} importantForAccessibility="no-hide-descendants">
       <Svg width={size} height={size} style={styles.svg}>
         <Circle
           cx={size / 2}
@@ -68,6 +78,7 @@ export default function CircularProgressBar({
         />
       </Svg>
       <Text style={styles.progressText}>{percent}%</Text>
+      </View>
     </View>
   );
 }
