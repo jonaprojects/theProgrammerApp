@@ -67,7 +67,7 @@ jobs:
         env:
           npm_config_legacy_peer_deps: "true"
         run: |
-          rm package-lock.json
+          rm -rf node_modules package-lock.json
           node .github/scripts/run-checked.mjs "Lockfile normalization failed" npm install --package-lock-only
       - name: Verify a clean install
         run: node .github/scripts/run-checked.mjs "Strict npm install failed" npm ci
