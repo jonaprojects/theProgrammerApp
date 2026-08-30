@@ -20,6 +20,8 @@ if (Platform.OS !== "web") {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
       shouldPlaySound: true,
       shouldSetBadge: false,
     }),
@@ -43,7 +45,8 @@ type NotificationsContextValue = {
 const defaults: ApiNotificationPreferences = { enabled: true, multiplayer: true, achievements: true };
 const NotificationsContext = createContext<NotificationsContextValue | null>(null);
 
-function notificationRoute(data: Record<string, unknown>): string | null {
+function notificationRoute(data?: Record<string, unknown>): string | null {
+  if (!data) return null;
   const route = data.route;
   if (typeof route !== "string") return null;
   return /^\/multiplayer\/[0-9a-f-]{36}$/.test(route) || route === "/leaderboard" || route === "/profile"
