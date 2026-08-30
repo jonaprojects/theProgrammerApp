@@ -1,0 +1,67 @@
+name: Prepare Expo SDK 57 security upgrade
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: prepare-expo-sdk-57-security-upgrade
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    name: Generate and verify compatible dependency upgrade
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "1"
+      EXPO_NO_TELEMETRY: "1"
+      UPGRADE_BRANCH: codex/expo-sdk-57-security-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Upgrade through Expo's compatibility resolver
+        shell: bash
+        run: |
+          npm install expo@~57.0.18
+          npx expo install --fix --npm
+      - name: Verify a clean install
+        run: npm ci
+      - name: Run Expo compatibility diagnostics
+        run: npx --yes expo-doctor
+      - name: Type-check application
+        run: npm run typecheck
+      - name: Run bounded application tests
+        run: npm run test:ci
+      - name: Build production web bundle
+        run: npm run build:web
+        env:
+          EXPO_PUBLIC_API_URL: https://api.example.invalid/api/v1
+      - name: Enforce production dependency security gate
+        shell: bash
+        run: |
+          set +e
+          npm audit --omit=dev --audit-level=high --json > "$RUNNER_TEMP/app-audit.json"
+          status=$?
+          set -e
+          node .github/scripts/summarize-audit.mjs "$RUNNER_TEMP/app-audit.json" app
+          exit "$status"
+      - name: Publish verified review branch
+        shell: bash
+        run: |
+          git diff --quiet -- package.json package-lock.json && { echo "Expo reported no manifest changes." >&2; exit 1; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$UPGRADE_BRANCH"
+          git add package.json package-lock.json
+          git commit -m "Upgrade Expo dependencies for security"
+          git push origin "$UPGRADE_BRANCH"
+          echo "### Verified dependency upgrade" >> "$GITHUB_STEP_SUMMARY"
+          echo "Review branch: \`$UPGRADE_BRANCH\`" >> "$GITHUB_STEP_SUMMARY"
