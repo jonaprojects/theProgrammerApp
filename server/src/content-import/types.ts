@@ -24,7 +24,7 @@ export interface ImportedCourse {
 
 export interface ImportedTutorialExercise {
   id: string;
-  type: "predict_output" | "fill_blank" | "find_bug" | "order_code" | "trace";
+  type: "predict_output" | "fill_blank" | "find_bug" | "order_code" | "trace" | "select_multiple" | "match_pairs";
   prompt: string;
   explanation: string;
   hint: string | null;

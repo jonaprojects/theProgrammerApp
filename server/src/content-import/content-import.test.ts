@@ -32,12 +32,13 @@ describe("legacy content importer", () => {
     assert.equal(bundle.lessons.length, 89);
     assert.equal(
       bundle.lessons.reduce((total, lesson) => total + lesson.exercises.length, 0),
-      89,
+      95,
     );
-    assert.ok(bundle.lessons.every((lesson) => lesson.exercises.length === 1));
+    assert.ok(bundle.lessons.every((lesson) => lesson.exercises.length >= 1));
+    assert.equal(bundle.lessons.filter((lesson) => lesson.exercises.length === 3).length, 3);
     assert.equal(
       new Set(bundle.lessons.flatMap((lesson) => lesson.exercises.map(({ id }) => id))).size,
-      89,
+      95,
     );
     assert.equal(bundle.rejections.length, 0);
     assert.equal(bundle.normalizations.length, 2);

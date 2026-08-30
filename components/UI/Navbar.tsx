@@ -37,16 +37,21 @@ export default function Navbar() {
           </Pressable>
         </Link>
         <View style={styles.navbarRightPanel}>
-          <View style={styles.pointsContainer}>
-            <Image
-              source={require("@/assets/images/icons/trophy.svg")}
-              style={{
-                width: 32,
-                height: 32,
-              }}
-            />
-            <H6>{progress?.user.points ?? 0}</H6>
-          </View>
+          <Link href="/leaderboard" asChild>
+            <Pressable
+              accessibilityLabel="פתיחת הדירוג וההישגים"
+              accessibilityHint="מציג את טבלת המובילים ואת ההישגים שלכם"
+              accessibilityRole="link"
+              hitSlop={8}
+              style={({ pressed }) => [styles.pointsContainer, pressed && styles.logoButtonPressed]}
+            >
+              <Image
+                source={require("@/assets/images/icons/trophy.svg")}
+                style={styles.trophy}
+              />
+              <H6>{progress?.user.points ?? 0}</H6>
+            </Pressable>
+          </Link>
           <Link href="/profile" asChild>
             <Pressable
               accessibilityLabel="פתיחת הפרופיל"
@@ -106,5 +111,8 @@ const styles = StyleSheet.create({
     gap: 8,
     flexDirection: "row",
     alignItems: "center",
+    minHeight: 44,
+    paddingHorizontal: 4,
   },
+  trophy: { width: 32, height: 32 },
 });

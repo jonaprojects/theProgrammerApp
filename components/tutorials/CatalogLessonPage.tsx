@@ -85,6 +85,7 @@ export default function CatalogLessonPage(props: Props) {
           {section.paragraphs?.map((paragraph, paragraphIndex) => <P key={`paragraph-${paragraphIndex}`} style={{ marginBottom: 12 }}>{paragraph}</P>)}
           {section.code ? <CodeSnippet language={section.language ?? props.defaultLanguage} code={section.code} /> : null}
           {section.exercise ? <InteractiveExercise exercise={section.exercise} /> : null}
+          {section.exercises?.map((exercise) => <InteractiveExercise key={exercise.id} exercise={exercise} />)}
         </Section>
       ))}
     </TutorialTemplate>

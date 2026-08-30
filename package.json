@@ -12,6 +12,9 @@
     "backend:build": "npm --prefix server run build",
     "backend:test": "npm --prefix server test",
     "backend:migrate": "npm --prefix server run db:migrate",
+    "backend:backup": "npm --prefix server run db:backup --",
+    "backend:verify-backup": "npm --prefix server run db:verify --",
+    "backend:restore": "npm --prefix server run db:restore --",
     "test": "jest --watchAll",
     "test:ci": "jest --runInBand --watch=false",
     "lint": "expo lint"

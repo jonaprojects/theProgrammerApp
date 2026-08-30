@@ -26,6 +26,8 @@ import {
 import type {
   TutorialExerciseAnswer,
   TutorialExerciseDefinition,
+  TutorialMatchPairsExercise,
+  TutorialMultiSelectExercise,
   TutorialExerciseOption,
   TutorialFindBugExercise,
   TutorialOrderCodeExercise,
@@ -39,6 +41,8 @@ const kindPresentation = {
   find_bug: { label: "מצאו את הבאג", icon: "bug-outline" },
   order_code: { label: "סדרו את הקוד", icon: "reorder-three-outline" },
   trace: { label: "עקבו אחרי המשתנה", icon: "git-branch-outline" },
+  select_multiple: { label: "בחרו את כל הנכונות", icon: "checkbox-outline" },
+  match_pairs: { label: "התאימו זוגות", icon: "git-compare-outline" },
 } as const;
 
 export default function InteractiveExercise({
@@ -207,6 +211,24 @@ export default function InteractiveExercise({
             />
           )}
 
+          {exercise.type === "select_multiple" && (
+            <MultiSelectInteraction
+              exercise={exercise}
+              selectedOptionIds={Array.isArray(answer) ? answer : []}
+              status={status}
+              onChange={updateAnswer}
+            />
+          )}
+
+          {exercise.type === "match_pairs" && (
+            <MatchPairsInteraction
+              exercise={exercise}
+              matches={Array.isArray(answer) ? answer : []}
+              status={status}
+              onChange={updateAnswer}
+            />
+          )}
+
           {status !== "idle" ? (
             <Feedback
               status={status}
@@ -261,6 +283,139 @@ export default function InteractiveExercise({
         </>
       )}
     </ThemedView>
+  );
+}
+
+function MultiSelectInteraction({
+  exercise,
+  selectedOptionIds,
+  status,
+  onChange,
+}: {
+  exercise: TutorialMultiSelectExercise;
+  selectedOptionIds: string[];
+  status: FeedbackStatus;
+  onChange: (answer: TutorialExerciseAnswer) => void;
+}) {
+  const toggleOption = (optionId: string) => {
+    const selected = selectedOptionIds.includes(optionId);
+    const nextIds = selected
+      ? selectedOptionIds.filter((id) => id !== optionId)
+      : [...selectedOptionIds, optionId];
+    const normalized = exercise.options
+      .filter((option) => nextIds.includes(option.id))
+      .map((option) => option.id);
+    onChange(normalized);
+  };
+
+  return (
+    <View>
+      {exercise.code ? (
+        <CodeSnippet compact code={exercise.code} language={exercise.language ?? "python"} />
+      ) : null}
+      <SecondaryText style={styles.multiSelectInstruction}>
+        אפשר לבחור יותר מתשובה אחת
+      </SecondaryText>
+      <View accessibilityRole="list" style={styles.choiceList}>
+        {exercise.options.map((option) => {
+          const selected = selectedOptionIds.includes(option.id);
+          const correct = exercise.correctOptionIds.includes(option.id);
+          const showCorrect = (status === "correct" || status === "revealed") && correct;
+          const showIncorrect = status === "incorrect" && selected && !correct;
+          return (
+            <Pressable
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: selected }}
+              key={option.id}
+              onPress={() => toggleOption(option.id)}
+              style={({ pressed }) => [
+                styles.choice,
+                selected && styles.choiceSelected,
+                showCorrect && styles.correctBorder,
+                showIncorrect && styles.incorrectBorder,
+                pressed && styles.pressed,
+              ]}
+            >
+              <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                {selected ? <Ionicons name="checkmark" size={16} color="#071A1D" /> : null}
+              </View>
+              <Text style={styles.choiceText}>{option.label}</Text>
+              {showCorrect ? <Ionicons name="checkmark-circle" size={21} color="#4ADE80" /> : null}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function MatchPairsInteraction({
+  exercise,
+  matches,
+  status,
+  onChange,
+}: {
+  exercise: TutorialMatchPairsExercise;
+  matches: string[];
+  status: FeedbackStatus;
+  onChange: (answer: TutorialExerciseAnswer) => void;
+}) {
+  const rightIdFor = (leftId: string) =>
+    matches.find((match) => match.startsWith(`${leftId}:`))?.split(":")[1] ?? null;
+  const usedRightIds = matches.map((match) => match.split(":")[1]).filter(Boolean);
+
+  const chooseMatch = (leftId: string, rightId: string) => {
+    const byLeftId = new Map(matches.map((match) => [match.split(":")[0], match]));
+    byLeftId.set(leftId, `${leftId}:${rightId}`);
+    onChange(exercise.leftItems.flatMap((item) => {
+      const match = byLeftId.get(item.id);
+      return match ? [match] : [];
+    }));
+  };
+
+  return (
+    <View style={styles.matchList}>
+      <SecondaryText style={styles.matchInstruction}>
+        בחרו התאמה אחת לכל מושג. כל תשובה משמשת פעם אחת.
+      </SecondaryText>
+      {exercise.leftItems.map((leftItem, leftIndex) => {
+        const selectedRightId = rightIdFor(leftItem.id);
+        const correctMatch = exercise.correctMatches[leftIndex];
+        return (
+          <View key={leftItem.id} style={styles.matchRow}>
+            <H6 style={styles.matchTerm}>{leftItem.label}</H6>
+            <View style={styles.matchChoices}>
+              {exercise.rightItems.map((rightItem) => {
+                const selected = selectedRightId === rightItem.id;
+                const usedElsewhere = !selected && usedRightIds.includes(rightItem.id);
+                const isCorrect = correctMatch === `${leftItem.id}:${rightItem.id}`;
+                const showCorrect = (status === "correct" || status === "revealed") && isCorrect;
+                const showIncorrect = status === "incorrect" && selected && !isCorrect;
+                return (
+                  <Pressable
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: selected, disabled: usedElsewhere }}
+                    disabled={usedElsewhere}
+                    key={rightItem.id}
+                    onPress={() => chooseMatch(leftItem.id, rightItem.id)}
+                    style={({ pressed }) => [
+                      styles.matchChoice,
+                      selected && styles.matchChoiceSelected,
+                      usedElsewhere && styles.matchChoiceUnavailable,
+                      showCorrect && styles.correctBorder,
+                      showIncorrect && styles.incorrectBorder,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Text style={styles.matchChoiceText}>{rightItem.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        );
+      })}
+    </View>
   );
 }
 
@@ -608,6 +763,49 @@ const styles = StyleSheet.create({
   },
   radioSelected: { borderColor: "#52F5FD" },
   radioDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: "#52F5FD" },
+  checkbox: {
+    width: 21,
+    height: 21,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#7E8A9B",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkboxSelected: { borderColor: "#52F5FD", backgroundColor: "#52F5FD" },
+  multiSelectInstruction: { marginTop: 10, textAlign: "right", fontSize: 13 },
+  matchList: { gap: 12 },
+  matchInstruction: { textAlign: "right", fontSize: 13 },
+  matchRow: {
+    gap: 9,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#39485E",
+    backgroundColor: "#202631",
+  },
+  matchTerm: { textAlign: "right", color: "#DDFBFC" },
+  matchChoices: { flexDirection: "row-reverse", flexWrap: "wrap", gap: 8 },
+  matchChoice: {
+    minHeight: 42,
+    maxWidth: "100%",
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#435269",
+    backgroundColor: "#293548",
+    justifyContent: "center",
+  },
+  matchChoiceSelected: { borderColor: "#52F5FD", backgroundColor: "#263F4A" },
+  matchChoiceUnavailable: { opacity: 0.38 },
+  matchChoiceText: {
+    color: "#FFFFFF",
+    fontFamily: "JetBrainsMono_400Regular",
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+  },
   correctBorder: { borderColor: "#4ADE80" },
   incorrectBorder: { borderColor: "#FB7185" },
   correctBackground: { backgroundColor: "rgba(74, 222, 128, 0.14)" },

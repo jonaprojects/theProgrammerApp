@@ -43,6 +43,42 @@ elif score >= 80:
           hint: "Python עוצרת בענף הראשון שהתנאי שלו מתקיים.",
           explanation: "85 עומד כבר בתנאי score >= 60, ולכן הענף הראשון רץ ו־elif כלל לא נבדק.",
         },
+        exercises: [
+          {
+            id: "python-elif-select-boolean-expressions-1",
+            type: "select_multiple",
+            prompt: "אילו שורות הן ביטויים שמחזירים True או False?",
+            code: `age = 20\nname = "Dana"`,
+            language: "python",
+            options: [
+              { id: "age", label: "age >= 18" },
+              { id: "name", label: "name == \"Dana\"" },
+              { id: "assign", label: "age = 18" },
+              { id: "print", label: "print(name)" },
+            ],
+            correctOptionIds: ["age", "name"],
+            hint: "חפשו comparison operators. סימן = יחיד מבצע השמה.",
+            explanation: ">= ו־== משווים ומחזירים Boolean. השמה משנה value, ו־print מציגה תוכן ומחזירה None.",
+          },
+          {
+            id: "python-elif-match-builtins-1",
+            type: "match_pairs",
+            prompt: "התאימו כל פעולה לתוצאה שלה.",
+            leftItems: [
+              { id: "len", label: "len(items)" },
+              { id: "append", label: "items.append(value)" },
+              { id: "print", label: "print(value)" },
+            ],
+            rightItems: [
+              { id: "display", label: "מציגה value" },
+              { id: "count", label: "מחזירה את מספר האיברים" },
+              { id: "add", label: "מוסיפה איבר לסוף list" },
+            ],
+            correctMatches: ["len:count", "append:add", "print:display"],
+            hint: "חשבו איזו פעולה מחזירה מידע, איזו משנה list ואיזו רק מציגה.",
+            explanation: "len מחזירה את אורך האוסף, append משנה list ומוסיפה איבר, ו־print מציגה value במסך.",
+          },
+        ],
       },
       {
         title: "תנאים משולבים",

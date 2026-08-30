@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import Body from "@/components/UI/Body";
 import Navbar from "@/components/UI/Navbar";
 import Container from "@/components/UI/Container";
@@ -13,6 +13,7 @@ import { useProgress } from "@/context/ProgressContext";
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
+  const router = useRouter();
   const { user, updateProfile, logout } = useAuth();
   const { progress, refresh } = useProgress();
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
@@ -82,6 +83,9 @@ export default function ProfileScreen() {
                   ? "יום למידה אחד בסך הכול"
                   : `${progress.summary.activeDays} ימי למידה בסך הכול`}
               </SecondaryText>
+              <SecondaryButton fill height={52} onPress={() => router.push("/leaderboard")}>
+                הצגת הדירוג וההישגים
+              </SecondaryButton>
             </View>
           ) : null}
           <View style={styles.form}>

@@ -83,4 +83,36 @@ describe("API", () => {
     assert.equal(response.json().error.code, "UNAUTHORIZED");
     await app.close();
   });
+
+  it("protects multiplayer matchmaking with authentication", async () => {
+    const app = await buildApp({
+      config,
+      database: createFakePool(),
+      authenticate: async () => { throw new UnauthorizedError(); },
+    });
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/multiplayer/matchmaking",
+      payload: { topicSlug: "python", questionCount: 5, roundDurationSeconds: 20 },
+    });
+
+    assert.equal(response.statusCode, 401);
+    assert.equal(response.json().error.code, "UNAUTHORIZED");
+    await app.close();
+  });
+
+  it("protects leaderboards and achievements with authentication", async () => {
+    const app = await buildApp({
+      config,
+      database: createFakePool(),
+      authenticate: async () => { throw new UnauthorizedError(); },
+    });
+
+    for (const url of ["/api/v1/leaderboards", "/api/v1/me/achievements"]) {
+      const response = await app.inject({ method: "GET", url });
+      assert.equal(response.statusCode, 401);
+      assert.equal(response.json().error.code, "UNAUTHORIZED");
+    }
+    await app.close();
+  });
 });

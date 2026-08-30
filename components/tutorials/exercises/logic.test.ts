@@ -40,6 +40,29 @@ const order: TutorialExerciseDefinition = {
   explanation: "Create the value before printing it.",
 };
 
+const multiSelect: TutorialExerciseDefinition = {
+  id: "multi",
+  type: "select_multiple",
+  prompt: "Select every comparison",
+  options: [
+    { id: "a", label: "a > 1" },
+    { id: "b", label: "b = 1" },
+    { id: "c", label: "c == 1" },
+  ],
+  correctOptionIds: ["a", "c"],
+  explanation: "Two options compare values.",
+};
+
+const matching: TutorialExerciseDefinition = {
+  id: "matching",
+  type: "match_pairs",
+  prompt: "Match the terms",
+  leftItems: [{ id: "p", label: "padding" }, { id: "m", label: "margin" }],
+  rightItems: [{ id: "in", label: "inside" }, { id: "out", label: "outside" }],
+  correctMatches: ["p:in", "m:out"],
+  explanation: "Padding is inside and margin is outside.",
+};
+
 describe("tutorial exercise logic", () => {
   it("evaluates choice and bug answers", () => {
     expect(exerciseAnswerIsCorrect(choice, "two")).toBe(true);
@@ -60,5 +83,16 @@ describe("tutorial exercise logic", () => {
     expect(emptyExerciseAnswer(order)).toEqual([]);
     expect(correctExerciseAnswer(bug)).toBe(0);
     expect(correctExerciseAnswer(order)).toEqual(["a", "b"]);
+    expect(emptyExerciseAnswer(multiSelect)).toEqual([]);
+    expect(correctExerciseAnswer(matching)).toEqual(["p:in", "m:out"]);
+  });
+
+  it("checks multi-select and matching answers in their stable display order", () => {
+    expect(exerciseAnswerIsComplete(multiSelect, ["a"])).toBe(true);
+    expect(exerciseAnswerIsCorrect(multiSelect, ["a", "c"])).toBe(true);
+    expect(exerciseAnswerIsCorrect(multiSelect, ["c", "a"])).toBe(false);
+    expect(exerciseAnswerIsComplete(matching, ["p:in"])).toBe(false);
+    expect(exerciseAnswerIsComplete(matching, ["p:in", "m:out"])).toBe(true);
+    expect(exerciseAnswerIsCorrect(matching, ["p:in", "m:out"])).toBe(true);
   });
 });

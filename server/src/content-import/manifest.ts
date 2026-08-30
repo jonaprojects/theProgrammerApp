@@ -164,7 +164,7 @@ export const cssLessonCatalogManifest: readonly CatalogLessonManifestEntry[] = [
 export const cssCourse = {
   slug: "css-basics",
   title: "CSS למתחילים",
-  description: "קורס CSS מקיף בעברית: מהקסקדה ומודל הקופסה ועד Flexbox, Grid ועיצוב רספונסיבי נגיש.",
+  description: "קורס CSS מקיף בעברית: מ־Cascade ו־Box Model ועד Flexbox, Grid ו־Responsive Design נגיש.",
   languageCode: "he",
   imageKey: "assets/images/courses/cssCourseCard.png",
 } as const;

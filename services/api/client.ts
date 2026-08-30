@@ -9,9 +9,14 @@ import type {
   ApiEnvelope,
   ApiProgress,
   ApiQuestion,
+  ApiMultiplayerAnswerResult,
+  ApiMultiplayerMatch,
   ApiTopic,
   ApiTutorialExerciseSubmission,
   ApiUserProfile,
+  ApiLeaderboard,
+  ApiLeaderboardPeriod,
+  ApiAchievements,
 } from "./types";
 
 const configuredUrl = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -146,6 +151,9 @@ export const api = {
       body: JSON.stringify(input),
     }),
   getProgress: () => authenticatedRequest<ApiProgress>("/me/progress"),
+  getLeaderboard: (period: ApiLeaderboardPeriod = "weekly", limit = 25) =>
+    authenticatedRequest<ApiLeaderboard>(`/leaderboards?period=${period}&limit=${limit}`),
+  getAchievements: () => authenticatedRequest<ApiAchievements>("/me/achievements"),
   enroll: (courseId: string) =>
     authenticatedRequest<void>("/me/enrollments", {
       method: "POST",
@@ -176,6 +184,47 @@ export const api = {
       { method: "POST", body: JSON.stringify(body) },
     );
   },
+  getCurrentMultiplayerMatch: () =>
+    authenticatedRequest<ApiMultiplayerMatch | null>("/multiplayer/me/current"),
+  createMultiplayerMatch: (input: {
+    topicSlug: string;
+    questionCount: number;
+    roundDurationSeconds: number;
+  }) => authenticatedRequest<ApiMultiplayerMatch>("/multiplayer/matches", {
+    method: "POST",
+    body: JSON.stringify(input),
+  }),
+  findMultiplayerMatch: (input: {
+    topicSlug: string;
+    questionCount: number;
+    roundDurationSeconds: number;
+  }) => authenticatedRequest<ApiMultiplayerMatch>("/multiplayer/matchmaking", {
+    method: "POST",
+    body: JSON.stringify(input),
+  }),
+  joinMultiplayerMatch: (code: string) =>
+    authenticatedRequest<ApiMultiplayerMatch>("/multiplayer/join", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    }),
+  getMultiplayerMatch: (matchId: string) =>
+    authenticatedRequest<ApiMultiplayerMatch>(`/multiplayer/matches/${encodeURIComponent(matchId)}`),
+  startMultiplayerMatch: (matchId: string) =>
+    authenticatedRequest<ApiMultiplayerMatch>(`/multiplayer/matches/${encodeURIComponent(matchId)}/start`, {
+      method: "POST",
+    }),
+  submitMultiplayerAnswer: (matchId: string, input: {
+    questionPosition: number;
+    selectedOptionId: string;
+    idempotencyKey: string;
+  }) => authenticatedRequest<ApiMultiplayerAnswerResult>(
+    `/multiplayer/matches/${encodeURIComponent(matchId)}/answers`,
+    { method: "POST", body: JSON.stringify(input) },
+  ),
+  leaveMultiplayerMatch: (matchId: string) =>
+    authenticatedRequest<void>(`/multiplayer/matches/${encodeURIComponent(matchId)}/leave`, {
+      method: "POST",
+    }),
 };
 
 export function createIdempotencyKey(): string {

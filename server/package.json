@@ -11,10 +11,15 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsc -p tsconfig.json && node --test dist/app.test.js dist/auth/password.test.js dist/config/env.test.js dist/content-import/content-import.test.js dist/modules/attempts/service.test.js dist/modules/progress/repository.test.js dist/modules/questions/repository.test.js dist/modules/tutorial-exercises/service.test.js",
+    "test": "tsc -p tsconfig.json && node --test dist/app.test.js dist/auth/password.test.js dist/config/env.test.js dist/content-import/content-import.test.js dist/modules/attempts/service.test.js dist/modules/leaderboards/repository.test.js dist/modules/multiplayer/rules.test.js dist/modules/progress/repository.test.js dist/modules/questions/repository.test.js dist/modules/tutorial-exercises/service.test.js scripts/db-tools.test.mjs",
     "db:migrate": "tsx src/db/migrate.ts",
+    "db:backup": "node scripts/db-backup.mjs",
+    "db:verify": "node scripts/db-verify.mjs",
+    "db:restore": "node scripts/db-restore.mjs",
+    "test:db-tools": "node --test scripts/db-tools.test.mjs",
     "content:validate": "tsx src/content-import/cli.ts --dry-run",
-    "content:import": "tsx src/content-import/cli.ts"
+    "content:import": "tsx src/content-import/cli.ts",
+    "test:multiplayer-smoke": "node scripts/multiplayer-smoke.mjs"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",

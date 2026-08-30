@@ -7,7 +7,7 @@ import { type PropsWithChildren } from 'react';
  */
 export default function Root({ children }: PropsWithChildren) {
   return (
-    <html lang="en">
+    <html lang="he">
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -29,11 +29,9 @@ export default function Root({ children }: PropsWithChildren) {
 }
 
 const responsiveBackground = `
+html,
 body {
-  background-color: #fff;
-}
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #000;
-  }
+  background-color: #202731;
+  color-scheme: dark;
+  scrollbar-color: #596677 #202731;
 }`;

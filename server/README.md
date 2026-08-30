@@ -16,6 +16,7 @@ server/
 │   │   ├── attempts/           Transactional answer submission and scoring
 │   │   ├── courses/            Published course and lesson catalog
 │   │   ├── health/             Service/database health
+│   │   ├── multiplayer/        Two-player rooms, timed rounds, scoring, and rewards
 │   │   ├── profiles/           Authenticated user profiles
 │   │   ├── progress/           Enrollments and user progress
 │   │   ├── questions/          Topics and safe question delivery
@@ -39,6 +40,38 @@ Repositories own SQL, services own business rules and transactions, and routes o
 5. Validate legacy content with `npm run content:validate`.
 6. Import it with `npm run content:import`.
 7. Start the API with `npm run dev`.
+
+## Database backups and recovery
+
+Backups use PostgreSQL's custom archive format, are written atomically, and receive
+a SHA-256 sidecar. Every newly created archive is immediately inspected with
+`pg_restore --list`. The default retention policy keeps at least seven backups and
+removes backups older than 14 days only after that minimum has been satisfied.
+
+When PostgreSQL client tools are installed locally:
+
+```powershell
+npm run db:backup
+npm run db:verify -- --file backups/the-programmer-YYYYMMDDTHHMMSSZ.dump
+```
+
+For the PostgreSQL service in this repository's Docker Compose file:
+
+```powershell
+npm run db:backup -- --docker
+npm run db:verify -- --file backups/the-programmer-YYYYMMDDTHHMMSSZ.dump --docker
+```
+
+A restore is deliberately guarded by the target database name and creates another
+backup in `backups/pre-restore/` before replacing database objects:
+
+```powershell
+npm run db:restore -- --file backups/the-programmer-YYYYMMDDTHHMMSSZ.dump --confirm-database the_programmer
+```
+
+Add `--docker` for the included container. Restore only during a maintenance window
+with API traffic stopped. The detailed runbook, retention guidance, restore drill,
+and production recommendations are in `../docs/database-backup-recovery.md`.
 
 The API listens on port 3000 by default. `GET /health` checks both the process and its database connection.
 
@@ -71,6 +104,16 @@ Curated catalog additions live in `../data/questions/catalogExpansion.ts` and `.
 | `POST` | `/api/v1/me/enrollments` | Yes | Enroll in a published course |
 | `PUT` | `/api/v1/me/courses/:courseSlug/lessons/:lessonSlug/progress` | Yes | Persist lesson access or completion |
 | `POST` | `/api/v1/me/tutorial-exercises/:exerciseId/submissions` | Yes | Check or reveal a tutorial answer and persist its result |
+| `GET` | `/api/v1/multiplayer/me/current` | Yes | Resume the current waiting or active match |
+| `POST` | `/api/v1/multiplayer/matches` | Yes | Create a private room |
+| `POST` | `/api/v1/multiplayer/matchmaking` | Yes | Join or create a compatible public queue |
+| `POST` | `/api/v1/multiplayer/join` | Yes | Join a private room by code |
+| `GET` | `/api/v1/multiplayer/matches/:matchId` | Yes | Read and synchronize match state |
+| `POST` | `/api/v1/multiplayer/matches/:matchId/start` | Yes | Start a full private room as its host |
+| `POST` | `/api/v1/multiplayer/matches/:matchId/answers` | Yes | Lock an answer idempotently for the current round |
+| `POST` | `/api/v1/multiplayer/matches/:matchId/leave` | Yes | Leave a waiting room or forfeit an active match |
+| `GET` | `/api/v1/leaderboards?period=weekly\|all_time` | Yes | Read ranked point totals and the current user's rank |
+| `GET` | `/api/v1/me/achievements` | Yes | Synchronize and read achievement progress |
 
 Register or sign in, then send the returned opaque token as
 `Authorization: Bearer <token>`. Passwords are hashed with scrypt and unique salts.
@@ -99,6 +142,23 @@ Example attempt body:
 
 The server derives correctness from PostgreSQL. Correct-answer flags are never included in question-delivery responses. Only published questions with at least two active options and exactly one active correct option are delivered. A user receives points only for their first correct attempt at a question. The attempt stores a snapshot of the explanation and correct option, so an exact idempotent replay returns the original feedback even if catalog content changes later. Reusing the key for another question or selection returns `409 IDEMPOTENCY_KEY_REUSED` without changing progress.
 
+Multiplayer matches contain exactly two active players. Private rooms start when
+the host chooses to begin; public rooms start automatically when matchmaking
+finds a compatible opponent. The server chooses the published questions, owns
+the round clock, validates option membership and correctness, and reveals the
+answer only after both players answer or time expires. Correct answers earn
+1,000 base points plus a bounded speed bonus. The final winner receives 20 XP,
+the other player receives 5 XP, and an exact draw awards 15 XP to each player.
+Rewards are applied once even when clients reconnect or poll a finished match.
+
+One user cannot enter two live matches: matchmaking operations are serialized
+per user, and an overlapping request returns `409 ACTIVE_MATCH_EXISTS`.
+Clients synchronize through short authenticated polling, so reopening the app
+can restore the authoritative room, round, scores, and results without exposing
+answer keys early. Run `npm run test:multiplayer-smoke` while the API is running
+to verify private rooms, quick matching, reconnection, concurrent creation,
+timeouts, all rounds, scoring, forfeits, results, and idempotent rewards.
+
 New submissions return `201` with `replayed: false`; exact retries return `200`
 with `replayed: true`. The database additionally enforces that both the selected
 and correct option belong to the attempt's question and permits at most one
@@ -112,6 +172,12 @@ practice status. Completing every published lesson atomically marks the course
 enrollment complete. A completed lesson never regresses when it is opened again.
 The same response includes all tutorial exercise states for the current user so
 the app can restore attempts and completion on another device.
+
+Leaderboards are calculated from authoritative point awards. The weekly view
+includes question attempts, tutorial exercises, and completed multiplayer
+rewards since the start of the current week; the all-time view uses each user's
+stored point total. Achievement reads synchronize permanent unlock records from
+the same learning data. Repeated reads are idempotent and do not award points.
 
 ## Production notes
 

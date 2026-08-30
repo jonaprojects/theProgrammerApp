@@ -13,6 +13,7 @@ export type PythonLessonSection = {
   code?: string;
   language?: string;
   exercise?: TutorialExerciseDefinition;
+  exercises?: TutorialExerciseDefinition[];
 };
 
 export type TutorialLessonContent = {
@@ -61,6 +62,9 @@ export default function PythonLessonPage({ lesson }: { lesson: PythonLessonConte
           {section.exercise ? (
             <InteractiveExercise exercise={section.exercise} />
           ) : null}
+          {section.exercises?.map((exercise) => (
+            <InteractiveExercise key={exercise.id} exercise={exercise} />
+          ))}
         </Section>
       ))}
     </PythonTutorialTemplate>

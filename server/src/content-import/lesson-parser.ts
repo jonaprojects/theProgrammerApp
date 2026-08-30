@@ -144,6 +144,14 @@ const tutorialExerciseSchema = z.discriminatedUnion("type", [
     type: z.literal("order_code"),
     correctOrder: z.array(z.string().min(1)).min(1),
   }),
+  exerciseBaseSchema.extend({
+    type: z.literal("select_multiple"),
+    correctOptionIds: z.array(z.string().min(1)).min(1),
+  }),
+  exerciseBaseSchema.extend({
+    type: z.literal("match_pairs"),
+    correctMatches: z.array(z.string().min(1)).min(1),
+  }),
 ]);
 
 function importedExercise(value: unknown): ImportedTutorialExercise {
@@ -152,7 +160,11 @@ function importedExercise(value: unknown): ImportedTutorialExercise {
     ? parsed.correctOptionId
     : "correctLineIndex" in parsed
       ? parsed.correctLineIndex
-      : parsed.correctOrder;
+      : "correctOrder" in parsed
+        ? parsed.correctOrder
+        : "correctOptionIds" in parsed
+          ? parsed.correctOptionIds
+          : parsed.correctMatches;
   return {
     id: parsed.id,
     type: parsed.type,
@@ -234,6 +246,7 @@ const catalogLessonSchema = z.object({
     code: z.string().min(1).optional(),
     language: z.string().min(1).optional(),
     exercise: tutorialExerciseSchema.optional(),
+    exercises: z.array(tutorialExerciseSchema).optional(),
   })),
   next: z.object({ title: z.string(), path: z.string() }).optional(),
 });
@@ -280,9 +293,10 @@ export async function parseLessonCatalogFile(
         });
       }
     }
-    const exercises = parsed.sections.flatMap(({ exercise }) =>
-      exercise ? [importedExercise(exercise)] : [],
-    );
+    const exercises = parsed.sections.flatMap(({ exercise, exercises: sectionExercises }) => [
+      ...(exercise ? [importedExercise(exercise)] : []),
+      ...(sectionExercises ?? []).map(importedExercise),
+    ]);
     return {
       sourceKey: `${options.sourceKeyPrefix ?? "catalog:python-lesson"}:${entry.key}`,
       courseSlug: options.courseSlug ?? "python-basics",

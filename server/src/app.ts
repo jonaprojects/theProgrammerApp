@@ -13,6 +13,8 @@ import { registerProgressRoutes } from "./modules/progress/routes.js";
 import { registerQuestionRoutes } from "./modules/questions/routes.js";
 import { registerProfileRoutes } from "./modules/profiles/routes.js";
 import { registerTutorialExerciseRoutes } from "./modules/tutorial-exercises/routes.js";
+import { registerMultiplayerRoutes } from "./modules/multiplayer/routes.js";
+import { registerLeaderboardRoutes } from "./modules/leaderboards/routes.js";
 import { ApiError } from "./shared/errors.js";
 
 interface BuildAppOptions {
@@ -89,6 +91,8 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     registerProgressRoutes(api, options.database, authenticate);
     registerProfileRoutes(api, options.database, authenticate);
     registerTutorialExerciseRoutes(api, options.database, authenticate);
+    registerMultiplayerRoutes(api, options.database, authenticate);
+    registerLeaderboardRoutes(api, options.database, authenticate);
   }, { prefix: "/api/v1" });
 
   return app;

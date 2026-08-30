@@ -18,6 +18,21 @@ export type TutorialChoiceExercise = TutorialExerciseBase & {
   correctOptionId: string;
 };
 
+export type TutorialMultiSelectExercise = TutorialExerciseBase & {
+  type: "select_multiple";
+  code?: string;
+  options: TutorialExerciseOption[];
+  correctOptionIds: string[];
+};
+
+export type TutorialMatchPairsExercise = TutorialExerciseBase & {
+  type: "match_pairs";
+  leftItems: TutorialExerciseOption[];
+  rightItems: TutorialExerciseOption[];
+  /** One `leftId:rightId` entry for every left item, in leftItems order. */
+  correctMatches: string[];
+};
+
 export type TutorialFindBugExercise = TutorialExerciseBase & {
   type: "find_bug";
   codeLines: string[];
@@ -32,6 +47,8 @@ export type TutorialOrderCodeExercise = TutorialExerciseBase & {
 
 export type TutorialExerciseDefinition =
   | TutorialChoiceExercise
+  | TutorialMultiSelectExercise
+  | TutorialMatchPairsExercise
   | TutorialFindBugExercise
   | TutorialOrderCodeExercise;
 

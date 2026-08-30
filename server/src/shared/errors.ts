@@ -22,6 +22,12 @@ export class UnauthorizedError extends ApiError {
   }
 }
 
+export class ForbiddenError extends ApiError {
+  constructor(message = "You are not allowed to perform this action") {
+    super(403, "FORBIDDEN", message);
+  }
+}
+
 export class ConflictError extends ApiError {
   constructor(code: string, message: string) {
     super(409, code, message);

@@ -161,3 +161,91 @@ export type ApiTutorialExerciseSubmission = {
   replayed: boolean;
   progress: Omit<ApiTutorialExerciseProgress, "exerciseId" | "lessonId" | "lessonSlug" | "courseSlug">;
 };
+
+export type ApiMultiplayerPlayer = {
+  userId: string;
+  displayName: string;
+  status: "active" | "left" | "forfeited";
+  score: number;
+  correctCount: number;
+  answeredCount: number;
+  rewardPoints: number;
+  answeredCurrent: boolean;
+};
+
+export type ApiMultiplayerRound = {
+  phase: "answering" | "reveal";
+  position: number;
+  startedAt: string;
+  endsAt: string;
+  revealedAt: string | null;
+  question: ApiQuestion;
+  correctOptionId: string | null;
+  myAnswer: {
+    selectedOptionId: string;
+    isCorrect: boolean | null;
+    pointsAwarded: number | null;
+  } | null;
+};
+
+export type ApiMultiplayerMatch = {
+  id: string;
+  code: string;
+  hostUserId: string;
+  topic: { id: string; slug: string; title: string };
+  visibility: "private" | "public";
+  status: "waiting" | "active" | "finished" | "cancelled";
+  questionCount: number;
+  roundDurationSeconds: number;
+  currentQuestionPosition: number;
+  winnerUserId: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  expiresAt: string;
+  players: ApiMultiplayerPlayer[];
+  round: ApiMultiplayerRound | null;
+};
+
+export type ApiMultiplayerAnswerResult = {
+  accepted: true;
+  replayed: boolean;
+  match: ApiMultiplayerMatch;
+};
+
+export type ApiLeaderboardPeriod = "weekly" | "all_time";
+
+export type ApiLeaderboardEntry = {
+  rank: number;
+  userId: string;
+  displayName: string;
+  points: number;
+  isCurrentUser: boolean;
+};
+
+export type ApiLeaderboard = {
+  period: ApiLeaderboardPeriod;
+  periodStartedAt: string | null;
+  generatedAt: string;
+  entries: ApiLeaderboardEntry[];
+  me: ApiLeaderboardEntry | null;
+};
+
+export type ApiAchievement = {
+  key: string;
+  title: string;
+  description: string;
+  iconName: string;
+  metric: string;
+  threshold: number;
+  currentValue: number;
+  progressPercentage: number;
+  unlockedAt: string | null;
+  isUnlocked: boolean;
+};
+
+export type ApiAchievements = {
+  unlockedCount: number;
+  totalCount: number;
+  achievements: ApiAchievement[];
+};

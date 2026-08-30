@@ -6,7 +6,11 @@ import type {
 export function emptyExerciseAnswer(
   exercise: TutorialExerciseDefinition,
 ): TutorialExerciseAnswer {
-  return exercise.type === "order_code" ? [] : null;
+  return exercise.type === "order_code" ||
+    exercise.type === "select_multiple" ||
+    exercise.type === "match_pairs"
+    ? []
+    : null;
 }
 
 export function correctExerciseAnswer(
@@ -17,6 +21,10 @@ export function correctExerciseAnswer(
     case "fill_blank":
     case "trace":
       return exercise.correctOptionId;
+    case "select_multiple":
+      return [...exercise.correctOptionIds];
+    case "match_pairs":
+      return [...exercise.correctMatches];
     case "find_bug":
       return exercise.correctLineIndex;
     case "order_code":
@@ -31,6 +39,12 @@ export function exerciseAnswerIsComplete(
   if (exercise.type === "order_code") {
     return Array.isArray(answer) && answer.length === exercise.blocks.length;
   }
+  if (exercise.type === "select_multiple") {
+    return Array.isArray(answer) && answer.length > 0;
+  }
+  if (exercise.type === "match_pairs") {
+    return Array.isArray(answer) && answer.length === exercise.leftItems.length;
+  }
   return answer !== null;
 }
 
@@ -43,6 +57,22 @@ export function exerciseAnswerIsCorrect(
       Array.isArray(answer) &&
       answer.length === exercise.correctOrder.length &&
       answer.every((blockId, index) => blockId === exercise.correctOrder[index])
+    );
+  }
+
+  if (exercise.type === "select_multiple") {
+    return (
+      Array.isArray(answer) &&
+      answer.length === exercise.correctOptionIds.length &&
+      answer.every((optionId, index) => optionId === exercise.correctOptionIds[index])
+    );
+  }
+
+  if (exercise.type === "match_pairs") {
+    return (
+      Array.isArray(answer) &&
+      answer.length === exercise.correctMatches.length &&
+      answer.every((match, index) => match === exercise.correctMatches[index])
     );
   }
 

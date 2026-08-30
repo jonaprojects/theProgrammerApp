@@ -36,6 +36,13 @@ attempts, hints, reveals, completion, lesson status, and one-time rewards follow
 the signed-in user across devices. Native session tokens are stored in encrypted
 Expo SecureStore; the web build uses browser storage.
 
+Multiplayer exercises also require both processes. Open **תרגול → תרגול מול
+חברים** to create a private room, enter a room code, or use quick matchmaking.
+Matches support two authenticated players, timed multiple-choice and yes/no
+questions, reconnecting to an unfinished match, server-side scoring, forfeits,
+and final XP rewards. For an end-to-end backend check against the running API,
+run `npm --prefix server run test:multiplayer-smoke`.
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Run the full development environment

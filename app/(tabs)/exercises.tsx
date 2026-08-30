@@ -8,6 +8,7 @@ import Body from "@/components/UI/Body";
 import Navbar from "@/components/UI/Navbar";
 import TopicProgress from "@/components/UI/topic_progress/TopicProgress";
 import { H2, P } from "@/components/UI/typography/Typography";
+import PrimaryButton from "@/components/UI/buttons/PrimaryButton";
 import { Colors } from "@/constants/Colors";
 import { useProgress } from "@/context/ProgressContext";
 
@@ -43,6 +44,11 @@ export default function ExerciseScreen() {
           ListHeaderComponent={
             <View style={styles.header}>
               <H2 style={styles.heading}>תרגלת כבר היום?</H2>
+              <View style={styles.multiplayerCard}>
+                <P style={styles.multiplayerTitle}>תרגול מול חברים</P>
+                <P style={styles.multiplayerDescription}>משחק קצר של שאלות בזמן אמת—מי שעונה נכון ומהר צובר יותר נקודות.</P>
+                <PrimaryButton height={50} fill onPress={() => router.navigate("/multiplayer")}>למשחק מרובה משתתפים</PrimaryButton>
+              </View>
               {error ? (
                 <P style={styles.errorText}>לא הצלחנו לטעון את הנושאים מהשרת.</P>
               ) : null}
@@ -80,6 +86,9 @@ const styles = StyleSheet.create({
   },
   header: { gap: 12, marginBottom: 20 },
   heading: { textAlign: "center" },
+  multiplayerCard: { marginTop: 6, padding: 18, gap: 10, borderRadius: 16, backgroundColor: "#20333D", borderWidth: 1, borderColor: "#00ADB5" },
+  multiplayerTitle: { textAlign: "right", fontFamily: "Heebo_700Bold", fontSize: 21 },
+  multiplayerDescription: { color: "#C3CBD5" },
   separator: { height: 12 },
   centeredState: { flex: 1, justifyContent: "center", alignItems: "center" },
   errorText: { color: "#FB7185", textAlign: "center" },
