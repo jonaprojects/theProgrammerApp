@@ -23,6 +23,17 @@ describe("loadConfig", () => {
     assert.equal(config.AUTH_MODE, "session");
   });
 
+  it("accepts an explicit staging deployment label in a production runtime", () => {
+    const config = loadConfig({
+      NODE_ENV: "production",
+      DEPLOYMENT_ENVIRONMENT: "staging",
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/the_programmer",
+      CORS_ORIGIN: "https://staging.example.com",
+    });
+    assert.equal(config.NODE_ENV, "production");
+    assert.equal(config.DEPLOYMENT_ENVIRONMENT, "staging");
+  });
+
   it("rejects insecure production CORS configuration", () => {
     assert.throws(() => loadConfig({
       NODE_ENV: "production",

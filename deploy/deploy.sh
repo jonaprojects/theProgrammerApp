@@ -24,17 +24,20 @@ if [[ -f "$deployed_tag_file" ]]; then
   previous_tag="$(<"$deployed_tag_file")"
 fi
 
-"${compose[@]}" pull api web
+"${compose[@]}" pull api web prometheus alertmanager grafana
 
 # Database migrations are transactional and protected by a PostgreSQL advisory lock.
 "${compose[@]}" run --rm --no-deps api node dist/db/migrate.js
 "${compose[@]}" run --rm --no-deps api node dist/content-import/cli.js
-"${compose[@]}" up -d --remove-orphans api web
+"${compose[@]}" up -d --remove-orphans api web prometheus alertmanager grafana
 
 healthy=false
 for _ in {1..45}; do
   if curl --fail --silent --show-error http://127.0.0.1:3000/health/ready >/dev/null \
-    && curl --fail --silent --show-error http://127.0.0.1:8080/health >/dev/null; then
+    && curl --fail --silent --show-error http://127.0.0.1:8080/health >/dev/null \
+    && curl --fail --silent --show-error http://127.0.0.1:9090/-/healthy >/dev/null \
+    && curl --fail --silent --show-error http://127.0.0.1:9093/-/healthy >/dev/null \
+    && curl --fail --silent --show-error http://127.0.0.1:3001/api/health >/dev/null; then
     healthy=true
     break
   fi
@@ -43,7 +46,7 @@ done
 
 if [[ "$healthy" != true ]]; then
   echo "Production health checks failed for $release_tag." >&2
-  "${compose[@]}" logs --tail=100 api web >&2 || true
+  "${compose[@]}" logs --tail=100 api web prometheus alertmanager grafana >&2 || true
   if [[ -n "$previous_tag" && "$previous_tag" != "$release_tag" ]]; then
     echo "Restoring application images from $previous_tag (database migrations remain applied)." >&2
     export IMAGE_TAG="$previous_tag"
@@ -54,4 +57,3 @@ fi
 
 printf '%s\n' "$release_tag" > "$deployed_tag_file"
 echo "Deployment $release_tag is healthy."
-

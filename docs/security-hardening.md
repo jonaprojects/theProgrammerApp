@@ -63,6 +63,14 @@ would otherwise consume Node connections.
   API with native clients. A future web-only backend-for-frontend should move the
   browser session to `Secure`, `HttpOnly`, `SameSite` cookies.
 
+## Automated dependency review
+
+`.github/workflows/security.yml` audits production dependencies for high and
+critical advisories on pull requests, every push to `main`, and weekly. A finding
+fails the release gate rather than silently shipping. Dependabot is configured
+for both the Expo app and API and groups weekly updates so upgrades can be tested
+and reviewed without uncontrolled version drift.
+
 ## References
 
 - [OWASP REST Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html)

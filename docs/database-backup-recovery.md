@@ -106,3 +106,19 @@ fails. Provider backup alerts and logical-backup alerts should be independent.
 Never commit archives or credentials to Git. `server/backups/` is ignored by the
 repository, but a production job should normally write directly to a protected mount
 or upload the result immediately.
+
+The repository includes `.github/workflows/database-backup.yml`. It runs on a
+GitHub-hosted runner each day, uses the PostgreSQL 17 client in an isolated
+container, creates a custom archive, verifies that `pg_restore` can read it,
+writes a SHA-256 sidecar, and retains the off-host artifact for 14 days. Configure
+a `production-backup` GitHub environment containing only the
+`BACKUP_DATABASE_URL` secret. Prefer a read-only backup-capable database role
+where the provider supports it.
+
+The manual `.github/workflows/recovery-drill.yml` workflow restores a selected
+backup artifact only into the database URL stored in the protected
+`recovery-drill` environment. It requires the exact confirmation text
+`RESTORE STAGING`, verifies the checksum and archive first, and checks core
+record counts after restoration. Protect that environment with a required
+reviewer and ensure `RECOVERY_DATABASE_URL` can never resolve to production.
+The workflow is intentionally never triggered automatically.

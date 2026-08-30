@@ -89,10 +89,27 @@ jobs:
           cat "$RUNNER_TEMP/api.log"
           exit 1
 
+  dependency-security:
+    name: Audit production dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.API_NODE_VERSION }}
+          cache: npm
+      - name: Audit app runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Install pnpm
+        run: corepack enable && corepack prepare pnpm@10.15.1 --activate
+      - name: Audit API runtime dependencies
+        run: pnpm --dir server audit --prod --audit-level high
+
   validate-images:
     name: Validate production images
     if: github.event_name == 'pull_request'
-    needs: [app-quality, api-quality]
+    needs: [app-quality, api-quality, dependency-security]
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -119,7 +136,7 @@ jobs:
   publish-images:
     name: Publish immutable images
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [app-quality, api-quality]
+    needs: [app-quality, api-quality, dependency-security]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -151,6 +168,7 @@ jobs:
           push: true
           tags: |
             ${{ steps.names.outputs.api-image }}:${{ github.sha }}
+            ${{ steps.names.outputs.api-image }}:${{ github.sha }}-staging
             ${{ steps.names.outputs.api-image }}:latest
           labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           cache-from: type=gha,scope=api
@@ -178,10 +196,78 @@ jobs:
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
 
+      - name: Validate staging API URL
+        if: vars.STAGING_DEPLOY_ENABLED == 'true'
+        shell: bash
+        env:
+          STAGING_API_URL: ${{ vars.STAGING_API_URL }}
+        run: |
+          case "$STAGING_API_URL" in
+            https://*/api/v1) ;;
+            *) echo "Set STAGING_API_URL to an HTTPS URL ending in /api/v1." >&2; exit 1 ;;
+          esac
+      - name: Publish staging web image
+        if: vars.STAGING_DEPLOY_ENABLED == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.web
+          push: true
+          build-args: EXPO_PUBLIC_API_URL=${{ vars.STAGING_API_URL }}
+          tags: ${{ steps.names.outputs.web-image }}:${{ github.sha }}-staging
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=web-staging
+          cache-to: type=gha,mode=max,scope=web-staging
+
+  deploy-staging:
+    name: Deploy staging
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.STAGING_DEPLOY_ENABLED == 'true'
+    needs: publish-images
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: staging-deployment
+      cancel-in-progress: false
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_WEB_URL }}
+    env:
+      API_IMAGE: ${{ needs.publish-images.outputs.api-image }}
+      WEB_IMAGE: ${{ needs.publish-images.outputs.web-image }}
+      IMAGE_TAG: ${{ github.sha }}-staging
+      SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+      SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+      SSH_PORT: ${{ vars.STAGING_SSH_PORT || '22' }}
+      SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+      DEPLOY_PATH: ${{ vars.STAGING_DEPLOY_PATH }}
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+      TARGET_API_URL: ${{ vars.STAGING_API_URL }}
+      TARGET_WEB_URL: ${{ vars.STAGING_WEB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy and verify staging
+        run: bash .github/scripts/deploy-remote.sh
+      - name: Run bounded authenticated release journey
+        run: node .github/scripts/release-smoke.mjs
+        env:
+          SMOKE_API_URL: ${{ vars.STAGING_API_URL }}
+          SMOKE_WEB_URL: ${{ vars.STAGING_WEB_URL }}
+          SMOKE_EMAIL: ${{ secrets.STAGING_SMOKE_EMAIL }}
+          SMOKE_PASSWORD: ${{ secrets.STAGING_SMOKE_PASSWORD }}
+
   deploy-production:
     name: Deploy production
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.PRODUCTION_DEPLOY_ENABLED == 'true'
-    needs: publish-images
+    if: >-
+      always() &&
+      github.ref == 'refs/heads/main' &&
+      github.event_name != 'pull_request' &&
+      vars.STAGING_DEPLOY_ENABLED == 'true' &&
+      vars.PRODUCTION_DEPLOY_ENABLED == 'true' &&
+      needs.publish-images.result == 'success' &&
+      needs.deploy-staging.result == 'success'
+    needs: [publish-images, deploy-staging]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     concurrency:
@@ -193,6 +279,7 @@ jobs:
     env:
       API_IMAGE: ${{ needs.publish-images.outputs.api-image }}
       WEB_IMAGE: ${{ needs.publish-images.outputs.web-image }}
+      IMAGE_TAG: ${{ github.sha }}
       SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
       SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
       SSH_PORT: ${{ vars.PRODUCTION_SSH_PORT || '22' }}
@@ -201,46 +288,9 @@ jobs:
       DEPLOY_PATH: ${{ vars.PRODUCTION_DEPLOY_PATH }}
       GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
       GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
-      PRODUCTION_API_URL: ${{ vars.PRODUCTION_API_URL }}
-      PRODUCTION_WEB_URL: ${{ vars.PRODUCTION_WEB_URL }}
+      TARGET_API_URL: ${{ vars.PRODUCTION_API_URL }}
+      TARGET_WEB_URL: ${{ vars.PRODUCTION_WEB_URL }}
     steps:
       - uses: actions/checkout@v4
-      - name: Validate deployment configuration
-        shell: bash
-        run: |
-          required=(SSH_HOST SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS DEPLOY_PATH GHCR_USERNAME GHCR_PULL_TOKEN PRODUCTION_API_URL PRODUCTION_WEB_URL)
-          for name in "${required[@]}"; do
-            if [[ -z "${!name}" ]]; then
-              echo "Missing production setting: $name" >&2
-              exit 1
-            fi
-          done
-          [[ "$DEPLOY_PATH" == /* ]] || { echo "PRODUCTION_DEPLOY_PATH must be absolute." >&2; exit 1; }
-      - name: Configure SSH
-        shell: bash
-        run: |
-          ssh_dir="$RUNNER_TEMP/production-ssh"
-          install -m 700 -d "$ssh_dir"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$ssh_dir/key"
-          chmod 600 "$ssh_dir/key"
-          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
-          echo "SSH_DIR=$ssh_dir" >> "$GITHUB_ENV"
-      - name: Upload deployment definition
-        shell: bash
-        run: |
-          ssh_args=(-i "$SSH_DIR/key" -o UserKnownHostsFile="$SSH_DIR/known_hosts" -o StrictHostKeyChecking=yes -p "$SSH_PORT")
-          scp_args=(-i "$SSH_DIR/key" -o UserKnownHostsFile="$SSH_DIR/known_hosts" -o StrictHostKeyChecking=yes -P "$SSH_PORT")
-          ssh "${ssh_args[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p -- '$DEPLOY_PATH'"
-          scp "${scp_args[@]}" deploy/docker-compose.production.yml deploy/deploy.sh deploy/.env.production.example "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
-      - name: Deploy immutable release
-        shell: bash
-        run: |
-          ssh_args=(-i "$SSH_DIR/key" -o UserKnownHostsFile="$SSH_DIR/known_hosts" -o StrictHostKeyChecking=yes -p "$SSH_PORT")
-          printf '%s' "$GHCR_PULL_TOKEN" | ssh "${ssh_args[@]}" "$SSH_USER@$SSH_HOST" "docker login ghcr.io --username '$GHCR_USERNAME' --password-stdin"
-          ssh "${ssh_args[@]}" "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && chmod 700 deploy.sh && ./deploy.sh '$GITHUB_SHA' '$API_IMAGE' '$WEB_IMAGE'"
-      - name: Verify public production endpoints
-        shell: bash
-        run: |
-          api_origin="${PRODUCTION_API_URL%/api/v1}"
-          curl --fail --show-error --retry 5 --retry-all-errors --retry-delay 3 "$api_origin/health/ready"
-          curl --fail --show-error --retry 5 --retry-all-errors --retry-delay 3 "$PRODUCTION_WEB_URL/health"
+      - name: Deploy and verify production
+        run: bash .github/scripts/deploy-remote.sh

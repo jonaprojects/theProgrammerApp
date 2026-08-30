@@ -42,7 +42,10 @@ export class HttpErrorReporter implements ErrorReporter {
 
   capture(error: unknown, context: ErrorContext): string {
     const eventId = randomUUID();
-    if (this.pending.size >= this.maxPending) return eventId;
+    if (this.pending.size >= this.maxPending) {
+      this.onDeliveryFailure(new Error("External error report queue is full"));
+      return eventId;
+    }
     const normalized = error instanceof Error ? error : new Error(String(error));
     const delivery = this.deliver({
       eventId,
@@ -70,7 +73,7 @@ export class HttpErrorReporter implements ErrorReporter {
 
   private async deliver(event: unknown): Promise<void> {
     try {
-      await this.fetchImpl(this.config.url, {
+      const response = await this.fetchImpl(this.config.url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,6 +82,9 @@ export class HttpErrorReporter implements ErrorReporter {
         body: JSON.stringify(event),
         signal: AbortSignal.timeout(3_000),
       });
+      if (!response.ok) {
+        throw new Error(`External error receiver returned HTTP ${response.status}`);
+      }
     } catch (error) {
       // Reporting must never crash or delay the application request path.
       this.onDeliveryFailure(error);
@@ -90,13 +96,14 @@ export function createErrorReporter(config: {
   ERROR_REPORTING_URL?: string | undefined;
   ERROR_REPORTING_TOKEN?: string | undefined;
   NODE_ENV: string;
+  DEPLOYMENT_ENVIRONMENT?: string | undefined;
   APP_VERSION: string;
 }, onDeliveryFailure: (error: unknown) => void = () => undefined): ErrorReporter {
   if (!config.ERROR_REPORTING_URL) return new NoopErrorReporter();
   return new HttpErrorReporter({
     url: config.ERROR_REPORTING_URL,
     ...(config.ERROR_REPORTING_TOKEN ? { token: config.ERROR_REPORTING_TOKEN } : {}),
-    environment: config.NODE_ENV,
+    environment: config.DEPLOYMENT_ENVIRONMENT ?? config.NODE_ENV,
     release: config.APP_VERSION,
   }, fetch, 50, onDeliveryFailure);
 }

@@ -1,0 +1,135 @@
+name: Release configuration readiness
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: release-configuration-readiness
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  staging:
+    name: Validate staging configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: staging
+    env:
+      DEPLOY_ENABLED: ${{ vars.STAGING_DEPLOY_ENABLED }}
+      API_URL: ${{ vars.STAGING_API_URL }}
+      WEB_URL: ${{ vars.STAGING_WEB_URL }}
+      DEPLOY_PATH: ${{ vars.STAGING_DEPLOY_PATH }}
+      SSH_PORT: ${{ vars.STAGING_SSH_PORT || '22' }}
+      SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+      SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.STAGING_SSH_KNOWN_HOSTS }}
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+      SMOKE_EMAIL: ${{ secrets.STAGING_SMOKE_EMAIL }}
+      SMOKE_PASSWORD: ${{ secrets.STAGING_SMOKE_PASSWORD }}
+    steps:
+      - name: Validate without contacting external systems
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          required=(
+            API_URL WEB_URL DEPLOY_PATH SSH_PORT SSH_HOST SSH_USER
+            SSH_PRIVATE_KEY SSH_KNOWN_HOSTS GHCR_USERNAME GHCR_PULL_TOKEN
+            SMOKE_EMAIL SMOKE_PASSWORD
+          )
+          for name in "${required[@]}"; do
+            [[ -n "${!name:-}" ]] || { echo "Missing staging setting: $name" >&2; exit 1; }
+          done
+          [[ -z "$DEPLOY_ENABLED" || "$DEPLOY_ENABLED" == "false" || "$DEPLOY_ENABLED" == "true" ]] || { echo "STAGING_DEPLOY_ENABLED must be true, false, or unset." >&2; exit 1; }
+          [[ "$API_URL" == https://*/api/v1 ]] || { echo "STAGING_API_URL must be HTTPS and end in /api/v1." >&2; exit 1; }
+          [[ "$WEB_URL" == https://* ]] || { echo "STAGING_WEB_URL must use HTTPS." >&2; exit 1; }
+          [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9._/-]+$ ]] || { echo "STAGING_DEPLOY_PATH is invalid." >&2; exit 1; }
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( SSH_PORT >= 1 && SSH_PORT <= 65535 )) || { echo "STAGING_SSH_PORT is invalid." >&2; exit 1; }
+          [[ "$SSH_USER" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]] || { echo "STAGING_SSH_USER is invalid." >&2; exit 1; }
+          [[ "$SSH_HOST" =~ ^[A-Za-z0-9.-]+$ ]] || { echo "STAGING_SSH_HOST is invalid." >&2; exit 1; }
+          [[ "$GHCR_USERNAME" =~ ^[A-Za-z0-9_-]+$ ]] || { echo "GHCR_USERNAME is invalid." >&2; exit 1; }
+          [[ "$SMOKE_EMAIL" == *@*.* ]] || { echo "STAGING_SMOKE_EMAIL is invalid." >&2; exit 1; }
+          [[ ${#SMOKE_PASSWORD} -ge 12 ]] || { echo "STAGING_SMOKE_PASSWORD must contain at least 12 characters." >&2; exit 1; }
+          [[ "$SSH_PRIVATE_KEY" == *"PRIVATE KEY"* ]] || { echo "STAGING_SSH_PRIVATE_KEY does not look like a private key." >&2; exit 1; }
+          [[ "$SSH_KNOWN_HOSTS" == *"ssh-"* ]] || { echo "STAGING_SSH_KNOWN_HOSTS does not contain a host key." >&2; exit 1; }
+          echo "Staging configuration is structurally ready (deployment enabled: ${DEPLOY_ENABLED:-false}). No host or endpoint was contacted."
+
+  production:
+    name: Validate production configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: production
+    env:
+      DEPLOY_ENABLED: ${{ vars.PRODUCTION_DEPLOY_ENABLED }}
+      API_URL: ${{ vars.PRODUCTION_API_URL }}
+      WEB_URL: ${{ vars.PRODUCTION_WEB_URL }}
+      DEPLOY_PATH: ${{ vars.PRODUCTION_DEPLOY_PATH }}
+      SSH_PORT: ${{ vars.PRODUCTION_SSH_PORT || '22' }}
+      SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+      SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.PRODUCTION_SSH_KNOWN_HOSTS }}
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+    steps:
+      - name: Validate without contacting external systems
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          required=(
+            API_URL WEB_URL DEPLOY_PATH SSH_PORT SSH_HOST SSH_USER
+            SSH_PRIVATE_KEY SSH_KNOWN_HOSTS GHCR_USERNAME GHCR_PULL_TOKEN
+          )
+          for name in "${required[@]}"; do
+            [[ -n "${!name:-}" ]] || { echo "Missing production setting: $name" >&2; exit 1; }
+          done
+          [[ -z "$DEPLOY_ENABLED" || "$DEPLOY_ENABLED" == "false" || "$DEPLOY_ENABLED" == "true" ]] || { echo "PRODUCTION_DEPLOY_ENABLED must be true, false, or unset." >&2; exit 1; }
+          [[ "$API_URL" == https://*/api/v1 ]] || { echo "PRODUCTION_API_URL must be HTTPS and end in /api/v1." >&2; exit 1; }
+          [[ "$WEB_URL" == https://* ]] || { echo "PRODUCTION_WEB_URL must use HTTPS." >&2; exit 1; }
+          [[ "$DEPLOY_PATH" =~ ^/[A-Za-z0-9._/-]+$ ]] || { echo "PRODUCTION_DEPLOY_PATH is invalid." >&2; exit 1; }
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] && (( SSH_PORT >= 1 && SSH_PORT <= 65535 )) || { echo "PRODUCTION_SSH_PORT is invalid." >&2; exit 1; }
+          [[ "$SSH_USER" =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]] || { echo "PRODUCTION_SSH_USER is invalid." >&2; exit 1; }
+          [[ "$SSH_HOST" =~ ^[A-Za-z0-9.-]+$ ]] || { echo "PRODUCTION_SSH_HOST is invalid." >&2; exit 1; }
+          [[ "$GHCR_USERNAME" =~ ^[A-Za-z0-9_-]+$ ]] || { echo "GHCR_USERNAME is invalid." >&2; exit 1; }
+          [[ "$SSH_PRIVATE_KEY" == *"PRIVATE KEY"* ]] || { echo "PRODUCTION_SSH_PRIVATE_KEY does not look like a private key." >&2; exit 1; }
+          [[ "$SSH_KNOWN_HOSTS" == *"ssh-"* ]] || { echo "PRODUCTION_SSH_KNOWN_HOSTS does not contain a host key." >&2; exit 1; }
+          echo "Production configuration is structurally ready (deployment enabled: ${DEPLOY_ENABLED:-false}). No host or endpoint was contacted."
+
+  backup:
+    name: Validate backup configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: production-backup
+    env:
+      DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+    steps:
+      - name: Validate without connecting to PostgreSQL
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ -n "$DATABASE_URL" ]] || { echo "BACKUP_DATABASE_URL is missing." >&2; exit 1; }
+          [[ "$DATABASE_URL" == postgres://* || "$DATABASE_URL" == postgresql://* ]] || { echo "BACKUP_DATABASE_URL must be a PostgreSQL URL." >&2; exit 1; }
+          echo "Backup configuration is structurally ready. PostgreSQL was not contacted."
+
+  recovery:
+    name: Validate recovery configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: recovery-drill
+    env:
+      DATABASE_URL: ${{ secrets.RECOVERY_DATABASE_URL }}
+    steps:
+      - name: Validate without connecting to PostgreSQL
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          [[ -n "$DATABASE_URL" ]] || { echo "RECOVERY_DATABASE_URL is missing." >&2; exit 1; }
+          [[ "$DATABASE_URL" == postgres://* || "$DATABASE_URL" == postgresql://* ]] || { echo "RECOVERY_DATABASE_URL must be a PostgreSQL URL." >&2; exit 1; }
+          echo "Recovery configuration is structurally ready. PostgreSQL was not contacted."

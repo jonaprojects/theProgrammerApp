@@ -64,6 +64,7 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   );
   notifications.start();
   const errorReporter = options.errorReporter ?? createErrorReporter(options.config, (error) => {
+    metrics.errorReportDeliveryFailed();
     app.log.warn({ err: error }, "External error report delivery failed");
   });
   app.decorate("errorReporter", errorReporter);

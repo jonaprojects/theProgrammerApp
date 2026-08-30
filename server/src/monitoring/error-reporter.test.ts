@@ -31,4 +31,33 @@ describe("HttpErrorReporter", () => {
     assert.equal(authorization, "Bearer reporting-secret-token");
     assert.doesNotMatch(requestBody.toLowerCase(), /password|authorization|cookie/);
   });
+
+  it("reports non-success responses from the external receiver", async () => {
+    const failures: string[] = [];
+    const fakeFetch = (async () => new Response(null, { status: 503 })) as typeof fetch;
+    const reporter = new HttpErrorReporter({
+      url: "https://errors.example.com/events",
+      environment: "test",
+      release: "1.2.3",
+    }, fakeFetch, 50, (error) => failures.push(error instanceof Error ? error.message : String(error)));
+
+    reporter.capture(new Error("database unavailable"), { source: "request" });
+    await reporter.flush();
+
+    assert.deepEqual(failures, ["External error receiver returned HTTP 503"]);
+  });
+
+  it("reports a full delivery queue without creating unbounded work", () => {
+    const failures: string[] = [];
+    const reporter = new HttpErrorReporter({
+      url: "https://errors.example.com/events",
+      environment: "test",
+      release: "1.2.3",
+    }, (() => new Promise<Response>(() => undefined)) as typeof fetch, 0,
+    (error) => failures.push(error instanceof Error ? error.message : String(error)));
+
+    reporter.capture(new Error("database unavailable"), { source: "request" });
+
+    assert.deepEqual(failures, ["External error report queue is full"]);
+  });
 });

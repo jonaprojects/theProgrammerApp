@@ -1,0 +1,70 @@
+name: PostgreSQL recovery drill
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_run_id:
+        description: Workflow run ID containing the verified backup artifact
+        required: true
+        type: string
+      confirmation:
+        description: Type RESTORE STAGING to confirm the isolated recovery database may be replaced
+        required: true
+        type: string
+
+concurrency:
+  group: recovery-drill
+  cancel-in-progress: false
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  restore:
+    name: Restore into isolated recovery database
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: recovery-drill
+    env:
+      RECOVERY_DATABASE_URL: ${{ secrets.RECOVERY_DATABASE_URL }}
+    steps:
+      - name: Validate explicit recovery authorization
+        shell: bash
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          [[ "$CONFIRMATION" == "RESTORE STAGING" ]] || { echo "Exact recovery confirmation is required." >&2; exit 1; }
+          [[ -n "$RECOVERY_DATABASE_URL" ]] || { echo "RECOVERY_DATABASE_URL is not configured." >&2; exit 1; }
+          case "$RECOVERY_DATABASE_URL" in
+            postgres://*|postgresql://*) ;;
+            *) echo "RECOVERY_DATABASE_URL must be a PostgreSQL URL." >&2; exit 1 ;;
+          esac
+      - name: Download verified backup
+        uses: actions/download-artifact@v4
+        with:
+          pattern: production-postgresql-backup-*
+          path: ${{ runner.temp }}/recovery
+          merge-multiple: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.backup_run_id }}
+      - name: Verify checksum and archive
+        shell: bash
+        run: |
+          archive="$(find "$RUNNER_TEMP/recovery" -maxdepth 1 -name '*.dump' -type f -print -quit)"
+          [[ -n "$archive" ]] || { echo "No backup archive was downloaded." >&2; exit 1; }
+          [[ -f "$archive.sha256" ]] || { echo "Backup checksum sidecar is missing." >&2; exit 1; }
+          (cd "$(dirname "$archive")" && sha256sum --check "$(basename "$archive.sha256")")
+          docker run --rm -i postgres:17-alpine pg_restore --list < "$archive" > /dev/null
+          echo "ARCHIVE=$archive" >> "$GITHUB_ENV"
+      - name: Restore only the isolated recovery database
+        shell: bash
+        run: |
+          docker run --rm -i -e RECOVERY_DATABASE_URL postgres:17-alpine \
+            sh -eu -c 'pg_restore --clean --if-exists --no-owner --no-acl --exit-on-error --dbname="$RECOVERY_DATABASE_URL"' \
+            < "$ARCHIVE"
+      - name: Verify restored core records
+        shell: bash
+        run: |
+          docker run --rm -e RECOVERY_DATABASE_URL postgres:17-alpine \
+            sh -eu -c 'psql "$RECOVERY_DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT count(*) AS courses FROM courses;" -c "SELECT count(*) AS users FROM users;" -c "SELECT count(*) AS attempts FROM attempts;"'

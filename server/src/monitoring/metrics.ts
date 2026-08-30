@@ -21,6 +21,7 @@ export class MetricsRegistry {
   private readonly requests = new Map<string, RequestMetric>();
   private activeRequests = 0;
   private unhandledErrors = 0;
+  private errorReportDeliveryFailures = 0;
 
   requestStarted(): void {
     this.activeRequests += 1;
@@ -47,6 +48,10 @@ export class MetricsRegistry {
     this.unhandledErrors += 1;
   }
 
+  errorReportDeliveryFailed(): void {
+    this.errorReportDeliveryFailures += 1;
+  }
+
   render(): string {
     const lines = [
       "# HELP the_programmer_uptime_seconds Process uptime in seconds.",
@@ -58,6 +63,9 @@ export class MetricsRegistry {
       "# HELP the_programmer_unhandled_errors_total Unhandled request errors.",
       "# TYPE the_programmer_unhandled_errors_total counter",
       `the_programmer_unhandled_errors_total ${this.unhandledErrors}`,
+      "# HELP the_programmer_error_report_delivery_failures_total External error report delivery failures.",
+      "# TYPE the_programmer_error_report_delivery_failures_total counter",
+      `the_programmer_error_report_delivery_failures_total ${this.errorReportDeliveryFailures}`,
       "# HELP process_resident_memory_bytes Resident memory size in bytes.",
       "# TYPE process_resident_memory_bytes gauge",
       `process_resident_memory_bytes ${process.memoryUsage().rss}`,

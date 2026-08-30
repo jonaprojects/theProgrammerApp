@@ -1,0 +1,31 @@
+name: Dependency security
+
+on:
+  schedule:
+    - cron: "30 3 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: dependency-security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  production-dependencies:
+    name: Audit production dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Audit app runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Install pnpm
+        run: corepack enable && corepack prepare pnpm@10.15.1 --activate
+      - name: Audit API runtime dependencies
+        run: pnpm --dir server audit --prod --audit-level high

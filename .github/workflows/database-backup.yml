@@ -1,0 +1,55 @@
+name: Production database backup
+
+on:
+  schedule:
+    - cron: "15 0 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: production-database-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Create and verify PostgreSQL backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production-backup
+    env:
+      DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+    steps:
+      - name: Validate backup configuration
+        shell: bash
+        run: |
+          [[ -n "$DATABASE_URL" ]] || { echo "BACKUP_DATABASE_URL is not configured." >&2; exit 1; }
+          case "$DATABASE_URL" in
+            postgres://*|postgresql://*) ;;
+            *) echo "BACKUP_DATABASE_URL must be a PostgreSQL URL." >&2; exit 1 ;;
+          esac
+      - name: Create a PostgreSQL 17 custom archive
+        id: backup
+        shell: bash
+        run: |
+          timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+          archive="$RUNNER_TEMP/the-programmer-$timestamp.dump"
+          docker run --rm -e DATABASE_URL postgres:17-alpine \
+            sh -eu -c 'pg_dump --format=custom --no-owner --no-acl "$DATABASE_URL"' > "$archive"
+          [[ -s "$archive" ]] || { echo "Backup archive is empty." >&2; exit 1; }
+          docker run --rm -i postgres:17-alpine pg_restore --list < "$archive" > /dev/null
+          checksum="$archive.sha256"
+          (cd "$(dirname "$archive")" && sha256sum "$(basename "$archive")" > "$(basename "$checksum")")
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+          echo "checksum=$checksum" >> "$GITHUB_OUTPUT"
+      - name: Store verified off-host backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-postgresql-backup-${{ github.run_id }}
+          path: |
+            ${{ steps.backup.outputs.archive }}
+            ${{ steps.backup.outputs.checksum }}
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0

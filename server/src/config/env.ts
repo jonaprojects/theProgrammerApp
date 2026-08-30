@@ -41,6 +41,7 @@ const envSchema = z
     CLIENT_ERROR_RATE_LIMIT_MAX: z.coerce.number().int().min(3).max(100).default(20),
     CLIENT_ERROR_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().min(10).max(3_600).default(60),
     APP_VERSION: z.string().trim().min(1).max(100).default("development"),
+    DEPLOYMENT_ENVIRONMENT: z.enum(["development", "staging", "production"]).optional(),
     METRICS_TOKEN: z.string().min(32).max(512).optional(),
     ERROR_REPORTING_URL: z.string().url().optional(),
     ERROR_REPORTING_TOKEN: z.string().min(16).max(2_048).optional(),
