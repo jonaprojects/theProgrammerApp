@@ -31,10 +31,10 @@ jobs:
         with:
           node-version: "22"
           cache: npm
+      - name: Keep npm peer resolution reproducible
+        run: npm config set legacy-peer-deps=true --location=project
       - name: Install Expo SDK 57
         shell: bash
-        env:
-          npm_config_legacy_peer_deps: "true"
         run: |
           npm pkg delete dependencies.react-native-syntax-highlighter
           set +e
@@ -51,8 +51,6 @@ jobs:
           fi
       - name: Align Expo-managed dependencies
         shell: bash
-        env:
-          npm_config_legacy_peer_deps: "true"
         run: |
           set +e
           npx expo install --fix --npm > "$RUNNER_TEMP/expo-align.log" 2>&1
@@ -64,13 +62,11 @@ jobs:
             exit "$status"
           fi
       - name: Normalize generated npm lockfile
-        env:
-          npm_config_legacy_peer_deps: "true"
         run: |
           rm -rf node_modules package-lock.json
           node .github/scripts/run-checked.mjs "Lockfile normalization failed" npm install --package-lock-only
-      - name: Verify a clean install
-        run: node .github/scripts/run-checked.mjs "Strict npm install failed" npm ci
+      - name: Verify a reproducible clean install
+        run: node .github/scripts/run-checked.mjs "Reproducible npm install failed" npm ci
       - name: Run Expo compatibility diagnostics
         run: node .github/scripts/run-checked.mjs "Expo Doctor failed" npx --yes expo-doctor
       - name: Type-check application
@@ -93,11 +89,11 @@ jobs:
       - name: Publish verified review branch
         shell: bash
         run: |
-          git diff --quiet -- package.json package-lock.json && { echo "Expo reported no manifest changes." >&2; exit 1; }
+          git diff --quiet -- .npmrc package.json package-lock.json && { echo "Expo reported no manifest changes." >&2; exit 1; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$UPGRADE_BRANCH"
-          git add package.json package-lock.json
+          git add .npmrc package.json package-lock.json
           git commit -m "Upgrade Expo dependencies for security"
           git push origin "$UPGRADE_BRANCH"
           echo "### Verified dependency upgrade" >> "$GITHUB_STEP_SUMMARY"
