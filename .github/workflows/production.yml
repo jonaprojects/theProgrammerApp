@@ -132,10 +132,38 @@ jobs:
           [[ "$APP_AUDIT_OUTCOME" == "success" ]] || { echo "App production dependency audit failed." >&2; exit 1; }
           [[ "$API_AUDIT_OUTCOME" == "success" ]] || { echo "API production dependency audit failed." >&2; exit 1; }
 
+  monitoring-config:
+    name: Validate monitoring configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate rendered Prometheus configuration
+        run: |
+          docker run --rm \
+            --entrypoint /bin/sh \
+            -e METRICS_TOKEN=ci-metrics-token-with-at-least-32-characters \
+            -e GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-ci.grafana.net/api/prom/push \
+            -e GRAFANA_CLOUD_PROMETHEUS_USERNAME=123456 \
+            -e GRAFANA_CLOUD_PROMETHEUS_TOKEN=ci-grafana-cloud-token \
+            -e DEPLOYMENT_ENVIRONMENT=ci \
+            -e PROMETHEUS_VALIDATE_ONLY=true \
+            -v "$PWD/deploy/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
+            -v "$PWD/deploy/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro" \
+            -v "$PWD/deploy/monitoring/start-prometheus.sh:/etc/prometheus/start.sh:ro" \
+            prom/prometheus:v3.14.0 /etc/prometheus/start.sh
+      - name: Validate Alertmanager configuration
+        run: |
+          docker run --rm \
+            --entrypoint /bin/amtool \
+            -v "$PWD/deploy/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro" \
+            prom/alertmanager:v0.33.1 \
+            check-config /etc/alertmanager/alertmanager.yml
+
   validate-images:
     name: Validate production images
     if: github.event_name == 'pull_request'
-    needs: [app-quality, api-quality, dependency-security]
+    needs: [app-quality, api-quality, dependency-security, monitoring-config]
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -162,7 +190,7 @@ jobs:
   publish-images:
     name: Publish immutable images
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [app-quality, api-quality, dependency-security]
+    needs: [app-quality, api-quality, dependency-security, monitoring-config]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:

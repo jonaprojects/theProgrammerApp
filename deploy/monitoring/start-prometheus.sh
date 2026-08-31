@@ -26,4 +26,7 @@ sed \
   -e "s|__GRAFANA_CLOUD_PROMETHEUS_USERNAME__|$GRAFANA_CLOUD_PROMETHEUS_USERNAME|g" \
   -e "s|__DEPLOYMENT_ENVIRONMENT__|$DEPLOYMENT_ENVIRONMENT|g" \
   /etc/prometheus/prometheus.yml > /tmp/prometheus.yml
+if [ "${PROMETHEUS_VALIDATE_ONLY:-false}" = "true" ]; then
+  exec /bin/promtool check config /tmp/prometheus.yml
+fi
 exec /bin/prometheus "$@"
