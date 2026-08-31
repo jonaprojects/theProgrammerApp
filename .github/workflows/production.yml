@@ -192,8 +192,8 @@ jobs:
           API_IMAGE: ${{ steps.names.outputs.api-image }}
           IMAGE_SOURCE: ${{ github.server_url }}/${{ github.repository }}
         run: |
-          node .github/scripts/run-checked.mjs "API image publication failed" \
-            docker buildx build \
+          set +e
+          docker buildx build \
             --file server/Dockerfile \
             --push \
             --tag "${API_IMAGE}:${GITHUB_SHA}" \
@@ -202,7 +202,13 @@ jobs:
             --label "org.opencontainers.image.source=${IMAGE_SOURCE}" \
             --cache-from type=gha,scope=api \
             --cache-to type=gha,mode=max,scope=api \
-            .
+            . > "$RUNNER_TEMP/api-image.log" 2>&1
+          status=$?
+          set -e
+          if [[ "$status" -ne 0 ]]; then
+            node .github/scripts/annotate-command-failure.mjs "$RUNNER_TEMP/api-image.log" "API image publication failed"
+          fi
+          exit "$status"
       - name: Validate production API URL
         shell: bash
         env:
