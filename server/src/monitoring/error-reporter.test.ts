@@ -28,6 +28,8 @@ describe("HttpErrorReporter", () => {
 
     const payload = JSON.parse(requestBody) as Record<string, unknown>;
     assert.equal(payload.eventId, eventId);
+    assert.equal(payload.message, "database unavailable");
+    assert.equal(payload.dt, payload.timestamp);
     assert.equal(authorization, "Bearer reporting-secret-token");
     assert.doesNotMatch(requestBody.toLowerCase(), /password|authorization|cookie/);
   });

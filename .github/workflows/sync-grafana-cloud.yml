@@ -1,0 +1,34 @@
+name: Sync Grafana Cloud dashboard
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync-dashboard:
+    name: Sync API overview dashboard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: Validate required Grafana Cloud configuration
+        env:
+          GRAFANA_CLOUD_URL: ${{ vars.GRAFANA_CLOUD_URL }}
+          GRAFANA_CLOUD_PROMETHEUS_DATASOURCE_UID: ${{ vars.GRAFANA_CLOUD_PROMETHEUS_DATASOURCE_UID }}
+          GRAFANA_CLOUD_SERVICE_ACCOUNT_TOKEN: ${{ secrets.GRAFANA_CLOUD_SERVICE_ACCOUNT_TOKEN }}
+        run: |
+          [[ "$GRAFANA_CLOUD_URL" == https://*.grafana.net ]] || { echo "GRAFANA_CLOUD_URL is missing or invalid." >&2; exit 1; }
+          [[ "$GRAFANA_CLOUD_PROMETHEUS_DATASOURCE_UID" =~ ^[A-Za-z0-9_-]+$ ]] || { echo "Grafana Cloud Prometheus datasource UID is missing or invalid." >&2; exit 1; }
+          [[ -n "$GRAFANA_CLOUD_SERVICE_ACCOUNT_TOKEN" ]] || { echo "Grafana Cloud service-account token is missing." >&2; exit 1; }
+      - name: Synchronize dashboard
+        env:
+          GRAFANA_CLOUD_URL: ${{ vars.GRAFANA_CLOUD_URL }}
+          GRAFANA_CLOUD_PROMETHEUS_DATASOURCE_UID: ${{ vars.GRAFANA_CLOUD_PROMETHEUS_DATASOURCE_UID }}
+          GRAFANA_CLOUD_SERVICE_ACCOUNT_TOKEN: ${{ secrets.GRAFANA_CLOUD_SERVICE_ACCOUNT_TOKEN }}
+        run: node .github/scripts/sync-grafana-dashboard.mjs

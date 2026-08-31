@@ -47,9 +47,12 @@ export class HttpErrorReporter implements ErrorReporter {
       return eventId;
     }
     const normalized = error instanceof Error ? error : new Error(String(error));
+    const timestamp = new Date().toISOString();
     const delivery = this.deliver({
       eventId,
-      timestamp: new Date().toISOString(),
+      timestamp,
+      dt: timestamp,
+      message: normalized.message,
       service: "the-programmer-api",
       environment: this.config.environment,
       release: this.config.release,
